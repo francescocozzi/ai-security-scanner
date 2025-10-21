@@ -21,6 +21,9 @@ Membri del team:
 
 - Vinicius Tadeu Anselmo Leite
 
+
+
+
 🛡️ AI Security Scanner
 
 AI Security Scanner è un progetto open-source che combina la potenza dell’intelligenza artificiale con strumenti di network scanning come Nmap, per rendere le analisi di sicurezza più intelligenti, leggibili e automatizzate.
