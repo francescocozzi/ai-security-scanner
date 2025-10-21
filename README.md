@@ -15,7 +15,7 @@ Membri del team:
 
 - Nicola Marella
 
-- Lorenzo
+- Lorenzo Misino
 
 - Sonia Rendina
 
