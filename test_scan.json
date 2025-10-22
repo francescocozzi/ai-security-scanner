@@ -1,0 +1,43 @@
+{
+  "scan_info": {
+    "scanner": "nmap",
+    "args": "nmap -oX test_scan.xml -F 127.0.0.1",
+    "start_time": "1761130516",
+    "version": "7.94SVN"
+  },
+  "hosts": [
+    {
+      "status": {
+        "state": "up",
+        "reason": "conn-refused"
+      },
+      "addresses": [
+        {
+          "addr": "127.0.0.1",
+          "addrtype": "ipv4"
+        }
+      ],
+      "hostnames": [
+        {
+          "name": "localhost",
+          "type": "PTR"
+        }
+      ],
+      "ports": [
+        {
+          "portid": "631",
+          "protocol": "tcp",
+          "state": {
+            "state": "open",
+            "reason": "syn-ack"
+          },
+          "service": {
+            "name": "ipp",
+            "product": null,
+            "version": null
+          }
+        }
+      ]
+    }
+  ]
+}
