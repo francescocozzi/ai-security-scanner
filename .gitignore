@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Project
+logs/
+*.log
+scan_results/*.xml
+scan_results/*.json
+
+# OS
+.DS_Store
+Thumbs.db 
