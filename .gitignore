@@ -22,3 +22,6 @@ scan_results/*.json
 # OS
 .DS_Store
 Thumbs.db 
+
+# Local scripts
+git-auto.sh
