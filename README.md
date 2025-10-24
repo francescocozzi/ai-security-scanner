@@ -51,49 +51,25 @@ Fornire report chiari e sintetici, supportati da modelli AI.
 Automatizzare test e validazioni per garantire affidabilità e scalabilità.
 
 🧩 Struttura del progetto\
-ai-security-scanner/\
-.
-├── comandi_git.md\
-├── examples\
-│   ├── basic_scan.py\
-│   └── complete_scan.py\
 
-├── README.md
-├── requirements.txt
-├── src
-│   ├── __init__.py
-│   ├── parser
-│   │   ├── __init__.py
-│   │   ├── json_converter.py
-│   │   ├── __pycache__
-│   │   │   ├── __init__.cpython-312.pyc
-│   │   │   ├── json_converter.cpython-312.pyc
-│   │   │   └── xml_parser.cpython-312.pyc
-│   │   └── xml_parser.py
-│   ├── __pycache__
-│   │   └── __init__.cpython-312.pyc
-│   ├── scanner
-│   │   ├── __init__.py
-│   │   ├── nmap_wrapper.py
-│   │   └── __pycache__
-│   │       ├── __init__.cpython-312.pyc
-│   │       └── nmap_wrapper.cpython-312.pyc
-│   └── utils
-│       └── __init__.py
-├── tests
-│   ├── __init__.py
-│   ├── __pycache__
-│   │   ├── __init__.cpython-312.pyc
-│   │   ├── test_converter.cpython-312-pytest-7.4.4.pyc
-│   │   ├── test_demo.cpython-312-pytest-7.4.4.pyc
-│   │   ├── test_parser.cpython-312-pytest-7.4.4.pyc
-│   │   └── test_scanner.cpython-312-pytest-7.4.4.pyc
-│   ├── test_converter.py
-│   ├── test_demo.py
-│   ├── test_parser.py
-│   └── test_scanner.py
-├── test_scan.json
-└── test_scan.xml
+ai-security-scanner/
+├── src/
+│   ├── scanner/
+│   │   └── nmap_wrapper.py      # Nmap interface
+│   ├── parser/
+│   │   ├── xml_parser.py        # XML parsing
+│   │   └── json_converter.py    # JSON conversion
+│   └── utils/                    # Utilities
+├── tests/
+│   ├── test_scanner.py          # Scanner tests
+│   ├── test_parser.py           # Parser tests
+│   └── test_converter.py        # Converter tests
+├── examples/
+│   └── complete_scan.py         # Full pipeline example
+├── scan_results/                # Output directory
+├── .github/workflows/           # CI/CD configs
+├── requirements.txt             # Dependencies
+└── README.md                    # This file
 
 ⚙️ Setup e dipendenze
 
