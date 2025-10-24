@@ -1,5 +1,19 @@
+TITOLO: AI Security Scanner
 
-Team
+# AI Security Scanner
+
+![CI/CD](https://github.com/davidedellisanti90/ai-security-scanner-cyber-sentinel-group/workflows/CI%2FCD%20Pipeline/badge.svg)
+![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+![Coverage](https://img.shields.io/codecov/c/github/davidedellisanti90/ai-security-scanner-cyber-sentinel-group)
+![Issues](https://img.shields.io/github/issues/davidedellisanti90/ai-security-scanner-cyber-sentinel-group)
+![Stars](https://img.shields.io/github/stars/davidedellisanti90/ai-security-scanner-cyber-sentinel-group)
+
+AI-powered security scanner using Nmap...
+
+--------------------------------------------------------------
+Team Cyber Sentinel
 
 Il progetto AI Security Scanner è sviluppato da un gruppo di appassionati di cybersecurity e intelligenza artificiale che credono in un futuro in cui la sicurezza sia automatizzata, trasparente e accessibile a tutti.
 
@@ -21,10 +35,7 @@ Membri del team:
 
 - Vinicius Tadeu Anselmo Leite
 
-
-
-
-🛡️ AI Security Scanner
+-----------------------------------------------------------------
 
 AI Security Scanner è un progetto open-source che combina la potenza dell’intelligenza artificiale con strumenti di network scanning come Nmap, per rendere le analisi di sicurezza più intelligenti, leggibili e automatizzate.
 
@@ -33,7 +44,6 @@ AI Security Scanner è un progetto open-source che combina la potenza dell’int
 L’obiettivo è creare un sistema capace di:
 
 Eseguire scansioni automatiche su reti e host.
-
 Interpretare i risultati delle scansioni attraverso un parser intelligente.
 
 Fornire report chiari e sintetici, supportati da modelli AI.
