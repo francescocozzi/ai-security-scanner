@@ -50,42 +50,16 @@ Fornire report chiari e sintetici, supportati da modelli AI.
 
 Automatizzare test e validazioni per garantire affidabilità e scalabilità.
 
-🧩 Struttura del progetto
-ai-security-scanner/
+🧩 Struttura del progetto\
+ai-security-scanner/\
 .
 ├── comandi_git.md\
 ├── examples\
 │   ├── basic_scan.py\
-│   └── complete_scan.py
-├── htmlcov
-│   ├── coverage_html.js
-│   ├── d_145eef247bfb46b6___init___py.html
-│   ├── d_980325688ee7b2ed___init___py.html
-│   ├── d_980325688ee7b2ed_json_converter_py.html
-│   ├── d_980325688ee7b2ed_xml_parser_py.html
-│   ├── d_e05799d1961e1e02___init___py.html
-│   ├── d_e05799d1961e1e02_nmap_wrapper_py.html
-│   ├── d_f1b38b22aeb65474___init___py.html
-│   ├── favicon_32.png
-│   ├── index.html
-│   ├── keybd_closed.png
-│   ├── keybd_open.png
-│   ├── status.json
-│   └── style.css
+│   └── complete_scan.py\
+
 ├── README.md
 ├── requirements.txt
-├── scan_results
-│   ├── 192_168_1_0_24_scan.xml
-│   ├── 192_168_178_36_scan.json
-│   ├── 192_168_178_36_scan.xml
-│   ├── 192_168_56_1_scan.json
-│   ├── 192_168_56_1_scan.xml
-│   ├── git rm test_scan_json test_scan_xml_scan.json
-│   ├── git rm test_scan_json test_scan_xml_scan.xml
-│   ├── IvanRobD_scan.json
-│   ├── IvanRobD_scan.xml
-│   ├── scanme_nmap_org_scan.json
-│   └── scanme_nmap_org_scan.xml
 ├── src
 │   ├── __init__.py
 │   ├── parser
@@ -165,42 +139,17 @@ Documenti
 
 Il flusso logico interno del sistema.
 
-commit ccb91035193761149d3cdfe59ff699470278c9d0 (HEAD -> main, origin/main)
-Author: Davide <davide90.oria@gmail.com>
-Date:   Fri Oct 24 13:18:18 2025 +0200
+L’utente inserisce l’indirizzo IP da analizzare.
 
-    Add CI/CD status badges
+Il modulo scanner/nmap_wrapper.py lancia la scansione con Nmap.
 
-commit b874af0f6fb65df6759ecc2e34a9ed679af081b4
-Author: Davide <davide90.oria@gmail.com>
-Date:   Fri Oct 24 12:59:22 2025 +0200
+I risultati XML vengono generati in scan_results/.
 
-    Aggiunto automatismo Workflows
+Il modulo parser/xml_parser.py legge il file XML.
 
-commit 41f29968c3026d3893ef026d1c4c1ac38cef22cd
-Author: Davide <davide90.oria@gmail.com>
-Date:   Fri Oct 24 11:39:12 2025 +0200
+Il modulo parser/json_converter.py converte i dati in JSON.
 
-    Add coverage configuration
-
-commit c01179f3c6f246c9a4f8f419f09be403f079c85f
-Author: Lorenzo <lorenzoloris81@gmail.com>
-Date:   Fri Oct 24 10:58:00 2025 +0200
-
-    Add comprehensive test suite with pytest
-
-commit 46608e07d0437c8003c8c4777cd9d97606ec4b93
-Author: Davide <davide90.oria@gmail.com>
-Date:   Wed Oct 22 13:23:11 2025 +0200
-
-    removed test_scan files
-
-commit d4a4611305dfa83c50da2af2b110c1c81cd6a199
-Author: Davide <davide90.oria@gmail.com>
-Date:   Wed Oct 22 13:09:21 2025 +0200
-
-    Aggiunto file complete_scan
-
+Il sistema mostra i risultati in output o li salva. 
 
 Le integrazioni AI previste.
 
