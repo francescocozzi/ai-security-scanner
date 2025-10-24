@@ -53,9 +53,9 @@ Automatizzare test e validazioni per garantire affidabilità e scalabilità.
 🧩 Struttura del progetto
 ai-security-scanner/
 .
-├── comandi_git.md
-├── examples
-│   ├── basic_scan.py
+├── comandi_git.md\
+├── examples\
+│   ├── basic_scan.py\
 │   └── complete_scan.py
 ├── htmlcov
 │   ├── coverage_html.js
