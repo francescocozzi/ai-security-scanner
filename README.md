@@ -129,11 +129,12 @@ Il sistema mostra i risultati in output o li salva.
 
 Le integrazioni AI previste.
 
+Integrazione di modelli AI per l’analisi dei risultati.
+
+
 Le prossime fasi di sviluppo.
 
 🔮 Prossimi sviluppi
-
-Integrazione di modelli AI per l’analisi dei risultati.
 
 Generazione automatica di report.
 
