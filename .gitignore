@@ -25,3 +25,7 @@ Thumbs.db
 
 # Local scripts
 git-auto.sh
+
+#modelli ml
+models/*.pkl
+data/*.json 
