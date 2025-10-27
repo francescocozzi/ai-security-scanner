@@ -27,5 +27,5 @@ Thumbs.db
 git-auto.sh
 
 #modelli ml
-models/*.pkl
-data/*.json 
+# models/*.pkl
+# data/*.json 
