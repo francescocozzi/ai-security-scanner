@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.95 scan initiated Wed Oct 29 13:19:36 2025 as: nmap -sV -&#45;script vuln -p 21,22,23,25,80,443,3306,3389,8080 -oX scan_fast.xml 192.168.1.1 -->
+<nmaprun scanner="nmap" args="nmap -sV -&#45;script vuln -p 21,22,23,25,80,443,3306,3389,8080 -oX scan_fast.xml 192.168.1.1" start="1761740376" startstr="Wed Oct 29 13:19:36 2025" version="7.95" xmloutputversion="1.05">
+<scaninfo type="syn" protocol="tcp" numservices="9" services="21-23,25,80,443,3306,3389,8080"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<prescript><script id="broadcast-avahi-dos" output="&#xa;  Discovered hosts:&#xa;    224.0.0.251&#xa;  After NULL UDP avahi packet DoS (CVE-2011-1002).&#xa;  Hosts are all up (not vulnerable).&#xa;"/></prescript><hosthint><status state="up" reason="arp-response" reason_ttl="0"/>
+<address addr="192.168.1.1" addrtype="ipv4"/>
+<address addr="88:AC:C0:13:D3:26" addrtype="mac" vendor="Zyxel Communications"/>
+<hostnames>
+</hostnames>
+</hosthint>
