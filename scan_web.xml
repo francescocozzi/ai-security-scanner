@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.94SVN scan initiated Wed Oct 29 13:41:21 2025 as: nmap -sV -&#45;script http-vuln-*,ssl-* -p 80,443 -oX scan_web.xml 192.168.1.1 -->
+<nmaprun scanner="nmap" args="nmap -sV -&#45;script http-vuln-*,ssl-* -p 80,443 -oX scan_web.xml 192.168.1.1" start="1761741681" startstr="Wed Oct 29 13:41:21 2025" version="7.94SVN" xmloutputversion="1.05">
+<scaninfo type="syn" protocol="tcp" numservices="2" services="80,443"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<runstats><finished time="1761741684" timestr="Wed Oct 29 13:41:24 2025" summary="Nmap done at Wed Oct 29 13:41:24 2025; 1 IP address (0 hosts up) scanned in 3.48 seconds" elapsed="3.48" exit="success"/><hosts up="0" down="1" total="1"/>
+</runstats>
+</nmaprun>
