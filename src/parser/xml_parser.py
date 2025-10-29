@@ -7,6 +7,10 @@ Parses Nmap XML output into structured Python dictionaries
 import xml.etree.ElementTree as ET
 import os
 from typing import Dict, List, Optional
+# New imports for ML integration
+from src.ml.analyzer import VulnerabilityAnalyzer
+from src.utils.risk_scorer import RiskScorer
+from src.nvd.nvd_client import NVDClient
 
 class NmapXMLParser:
     '''Parser for Nmap XML output files'''
@@ -199,3 +203,169 @@ if __name__ == '__main__':
     except Exception as e:
         print(f'Error: {e}')
         sys.exit(1)
+class EnhancedVulnerabilityParser:
+    '''Parser with ML and NVD enhancement'''
+    
+    def __init__(self, use_ml=True, use_risk_scorer=True, use_nvd=False):
+        '''Initialize enhanced parser'''
+        self.use_ml = use_ml
+        self.use_risk_scorer = use_risk_scorer
+        self.use_nvd = use_nvd
+        
+        self.ml_analyzer = None
+        self.risk_scorer = None
+        self.nvd_client = None
+        
+        if self.use_ml:
+            try:
+                self.ml_analyzer = VulnerabilityAnalyzer()
+                print("✓ ML Analyzer inizializzato")
+            except Exception as e:
+                print(f"⚠ ML Analyzer non disponibile: {e}")
+                self.use_ml = False
+        
+        if self.use_risk_scorer:
+            self.risk_scorer = RiskScorer()
+            print("✓ Risk Scorer inizializzato")
+        
+        if self.use_nvd:
+            try:
+                self.nvd_client = NVDClient()
+                print("✓ NVD Client inizializzato")
+            except Exception as e:
+                print(f"⚠ NVD Client non disponibile: {e}")
+                self.use_nvd = False
+    
+    def parse_and_enhance(self, xml_file):
+        '''Parse XML and apply enhancements'''
+        print(f"\n[1/4] Parsing XML: {xml_file}")
+        vulnerabilities = parse_nmap_xml(xml_file)
+        print(f"  → {len(vulnerabilities)} vulnerabilità trovate")
+        
+        if not vulnerabilities:
+            return {'vulnerabilities': [], 'summary': {}}
+        
+        # NVD Enhancement
+        if self.use_nvd and self.nvd_client:
+            print(f"\n[2/4] Arricchimento NVD...")
+            vulnerabilities = self._apply_nvd_enrichment(vulnerabilities)
+        else:
+            print(f"\n[2/4] NVD Enhancement disabilitato")
+        
+        # ML Analysis
+        if self.use_ml and self.ml_analyzer:
+            print(f"\n[3/4] Analisi ML...")
+            vulnerabilities = self._apply_ml_analysis(vulnerabilities)
+        else:
+            print(f"\n[3/4] ML Analysis disabilitato")
+        
+        # Summary
+        print(f"\n[4/4] Generazione summary...")
+        summary = self._generate_summary(vulnerabilities)
+        
+        return {
+            'vulnerabilities': vulnerabilities,
+            'summary': summary,
+            'ml_enabled': self.use_ml,
+            'nvd_enabled': self.use_nvd,
+            'risk_scoring_enabled': self.use_risk_scorer
+        }
+    
+    def _apply_nvd_enrichment(self, vulnerabilities):
+        '''Enrich with NVD data'''
+        enriched = []
+        
+        for i, vuln in enumerate(vulnerabilities, 1):
+            print(f"  Enriching {i}/{len(vulnerabilities)}...", end='\r')
+            
+            try:
+                enriched_vuln = self.nvd_client.enrich_vulnerability(vuln)
+                enriched.append(enriched_vuln)
+            except Exception as e:
+                print(f"\n⚠ Errore NVD per {vuln.get('cve_id')}: {e}")
+                enriched.append(vuln)
+        
+        print(f"  ✓ NVD enrichment complete")
+        return enriched
+    
+    def _apply_ml_analysis(self, vulnerabilities):
+        '''Apply ML analysis'''
+        enhanced = []
+        
+        for i, vuln in enumerate(vulnerabilities, 1):
+            print(f"  Analyzing {i}/{len(vulnerabilities)}...", end='\r')
+            
+            try:
+                ml_result = self.ml_analyzer.analyze(vuln)
+                
+                if self.use_risk_scorer and self.risk_scorer:
+                    risk_score = self.risk_scorer.calculate_risk_score(vuln, ml_result)
+                    priority = self.risk_scorer.get_priority(risk_score)
+                    
+                    ml_result['risk_score'] = float(risk_score)
+                    ml_result['priority'] = int(priority)
+                    ml_result['priority_label'] = self.risk_scorer.get_priority_label(priority)
+                    ml_result['timeframe'] = self.risk_scorer.get_timeframe(priority)
+                
+                vuln['ml_analysis'] = ml_result
+                
+            except Exception as e:
+                print(f"\n⚠ Errore ML: {e}")
+                vuln['ml_analysis'] = {'ml_available': False, 'error': str(e)}
+            
+            enhanced.append(vuln)
+        
+        print(f"  ✓ ML analysis complete")
+        return enhanced
+    
+    def _generate_summary(self, vulnerabilities):
+        '''Generate summary statistics'''
+        summary = {
+            'total': len(vulnerabilities),
+            'by_severity': {},
+            'by_priority': {},
+            'top_risks': [],
+            'nvd_enriched_count': 0
+        }
+        
+        for vuln in vulnerabilities:
+            # Count NVD enrichment
+            if vuln.get('nvd_enriched'):
+                summary['nvd_enriched_count'] += 1
+            
+            # Severity
+            sev = vuln.get('severity', 'UNKNOWN')
+            summary['by_severity'][sev] = summary['by_severity'].get(sev, 0) + 1
+            
+            # Priority
+            if 'ml_analysis' in vuln:
+                ml = vuln['ml_analysis']
+                if ml.get('ml_available'):
+                    priority = ml.get('priority', 4)
+                    summary['by_priority'][priority] = summary['by_priority'].get(priority, 0) + 1
+        
+        # Top risks
+        ml_vulns = [v for v in vulnerabilities if 'ml_analysis' in v and v['ml_analysis'].get('ml_available')]
+        sorted_vulns = sorted(ml_vulns, key=lambda x: x['ml_analysis'].get('risk_score', 0), reverse=True)
+        
+        summary['top_risks'] = [
+            {
+                'cve_id': v.get('cve_id', 'unknown'),
+                'cvss': v.get('cvss_score', 0),
+                'risk_score': v['ml_analysis']['risk_score'],
+                'priority': v['ml_analysis']['priority']
+            }
+            for v in sorted_vulns[:5]
+        ]
+        
+        return summary
+
+
+def parse_with_ml(xml_file, use_ml=True, use_risk_scorer=True, use_nvd=False):
+    '''Helper function for parsing with ML'''
+    parser = EnhancedVulnerabilityParser(
+        use_ml=use_ml,
+        use_risk_scorer=use_risk_scorer,
+        use_nvd=use_nvd
+    )
+    return parser.parse_and_enhance(xml_file)
