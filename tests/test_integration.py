@@ -35,10 +35,10 @@ class TestIntegration:
         result = analyzer.analyze(test_vuln)
         
         # L'analyzer restituisce solo ML predictions
-    assert 'ml_available' in result
-    assert 'predicted_severity' in result
-    assert 'ml_confidence' in result
-    assert 'original_severity' in result
+        assert 'ml_available' in result
+        assert 'predicted_severity' in result
+        assert 'ml_confidence' in result
+        assert 'original_severity' in result
     
     # Se il modello è disponibile, verifica la predizione
     if result['ml_available']:
