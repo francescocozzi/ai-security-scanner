@@ -1,12 +1,8 @@
 # AI Security Scanner
 
-![CI/CD](https://github.com/francescocozzi/ai-security-scanner/workflows/CI%2FCD%20Pipeline/badge.svg)
-![Python](https://img.shields.io/badge/python-3.8%2B-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-
-![Coverage](https://img.shields.io/codecov/c/github/francescocozzi/ai-security-scanner/)
-![Issues](https://img.shields.io/github/issues/francescocozzi/ai-security-scanner/)
-![Stars](https://img.shields.io/github/stars/francescocozzi/ai-security-scanner/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![Status](https://img.shields.io/badge/status-active-success.svg)
+![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)
 
 ## 🔐 Overview
 
@@ -28,12 +24,14 @@ The tool scans the project structure, dependencies, datasets, and configuration 
 ## 🖥️ HTML Dashboard Generator
 
 The repository includes a dashboard generator capable of producing:
+
 - Vulnerability summaries
 - Visual charts
 - Severity scores
 - Fix recommendations
 
 Ideal for:
+
 - Security reviews
 - CI/CD pipelines
 - Compliance reports
@@ -54,24 +52,28 @@ Clone the repository:
 git clone https://github.com/francescocozzi/ai-security-scanner.git
 cd ai-security-scanner
 pip install -r requirements.txt
-```
+````
 
-Usage Example:
+### Usage Example
 
+```bash
 python scanner.py \
     --target ./project_to_analyze \
     --output ./reports/security_report.html \
     --config ./config/scanner_config.yaml
-
+```
 
 Get full CLI help:
 
+```bash
 python scanner.py --help
+```
 
-⚙️ Configuration
+## ⚙️ Configuration
 
 You can customize behavior through a YAML configuration file:
 
+```yaml
 checks:
   code_analysis: true
   dependency_vulnerabilities: true
@@ -83,8 +85,11 @@ thresholds:
 report:
   format: html
   save_path: ./reports
+```
 
-📂 Project Structure
+## 📂 Project Structure
+
+```
 ai-security-scanner/
 ├── scanner.py                # Main scanner entry point
 ├── modules/                  # Security scanning modules
@@ -93,78 +98,68 @@ ai-security-scanner/
 ├── dashboard/                # HTML dashboard builder
 ├── tests/                    # Unit tests
 └── README.md
+```
 
-✅ Features
+## ✅ Features
 
-Static code analysis (Python)
+* Static code analysis (Python)
+* Dependency vulnerability auditing
+* HTML dashboard reporting
+* Severity scoring
+* Easy CI/CD integration
+* Modular architecture (plug-in friendly)
 
-Dependency vulnerability auditing
-
-HTML dashboard reporting
-
-Severity scoring
-
-Easy CI/CD integration
-
-Modular architecture (plug-in friendly)
-
-🧪 Tests
+## 🧪 Tests
 
 Run unit tests:
 
+```bash
 pytest
+```
 
-💡 Roadmap
+## 💡 Roadmap
 
 Planned improvements include:
 
-AI-assisted code suggestion engine
+* AI-assisted code suggestion engine
+* Container image scanning
+* Secret-leak pattern classification
+* CLI interactive mode
+* Export to PDF
 
-Container image scanning
-
-Secret-leak pattern classification
-
-CLI interactive mode
-
-Export to PDF
-
-🤝 Contributing
+## 🤝 Contributing
 
 Contributions are welcome!
 
-Fork the repository
-
-Create a feature branch:
-git checkout -b feature/my-check
-
-Commit your changes
-git commit -m "Add new scanning plugin"
-
-Push the branch
-git push origin feature/my-check
-
-Open a Pull Request
+1. Fork the repository
+2. Create a feature branch:
+   `git checkout -b feature/my-check`
+3. Commit your changes
+   `git commit -m "Add new scanning plugin"`
+4. Push the branch
+   `git push origin feature/my-check`
+5. Open a Pull Request
 
 Please ensure that all tests pass before submitting.
 
-🔒 Security Notice
+## 🔒 Security Notice
 
 If you discover a security vulnerability:
 
-Do not open a public issue
-
-Please contact the maintainer privately
+* **Do not** open a public issue
+* Please contact the maintainer privately
 
 Responsible disclosure is appreciated.
 
-📄 License
+## 📄 License
 
-Distributed under the MIT License.
-See the LICENSE file for more information.
+Distributed under the **MIT** License.
+See the `LICENSE` file for more information.
 
-👤 Maintainer
+## 👤 Maintainer
 
-Francesco Cozzi
-GitHub: https://github.com/francescocozzi
+**Francesco Cozzi**
+GitHub: [https://github.com/francescocozzi](https://github.com/francescocozzi)
 
 For inquiries, open an Issue or Discussion.
+
