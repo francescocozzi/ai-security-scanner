@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)
+![CI](https://github.com/francescocozzi/ai-security-scanner/actions/workflows/ci.yml/badge.svg)
 
 ## 🔐 Overview
 
@@ -91,13 +92,20 @@ report:
 
 ```
 ai-security-scanner/
-├── scanner.py                # Main scanner entry point
-├── modules/                  # Security scanning modules
-├── config/                   # YAML config templates
-├── reports/                  # Generated reports output
-├── dashboard/                # HTML dashboard builder
-├── tests/                    # Unit tests
-└── README.md
+├── __pycache__/                 # Python bytecode cache (auto-generated)
+├── data/
+│   └── example_scan.json        # Example vulnerability scan results
+├── reports/
+│   ├── dashboard_example.html   # Example generated HTML report
+│   └── plots/                   # Matplotlib charts used in dashboards
+├── utils/
+│   ├── parser.py                # Scan results parser with ML-driven scoring
+│   └── security_scores.py       # Logic for severity classification
+├── dashboard_generator.py       # HTML dashboard builder
+├── scanner.py                   # Entry point for the security scan
+├── requirements.txt             # Python dependencies
+├── README.md                    # Project documentation
+└── LICENSE                      # Project license
 ```
 
 ## ✅ Features
@@ -116,6 +124,35 @@ Run unit tests:
 ```bash
 pytest
 ```
+
+## 📸 Dashboard Preview
+
+![Dashboard Example](./docs/dashboard_preview.png)
+
+
+## 📝 Sample Report Snippet
+
+```json
+{
+  "vulnerabilities": [
+    {"name": "insecure_dependency", "severity": "high"},
+    {"name": "weak_credentials", "severity": "medium"}
+  ],
+  "summary": {
+    "high": 3,
+    "medium": 5,
+    "low": 2
+  }
+}
+
+## 🔍 Current Checks
+
+- Deprecated / risky Python functions
+- Weak cryptographic algorithms
+- Hard-coded credentials
+- Vulnerable dependencies (CVE-based)
+- Suspicious network-related constants
+
 
 ## 💡 Roadmap
 
@@ -163,3 +200,9 @@ GitHub: [https://github.com/francescocozzi](https://github.com/francescocozzi)
 
 For inquiries, open an Issue or Discussion.
 
+⚠️ This tool does *not* replace manual security review.
+It is meant to support—not replace—expert analysis.
+
+## 🔖 Tags
+
+security, cybersecurity, machine-learning, auditing, scanning, CVE, MLOps, DevSecOps
