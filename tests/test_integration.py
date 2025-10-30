@@ -40,10 +40,10 @@ class TestIntegration:
         assert 'ml_confidence' in result
         assert 'original_severity' in result
     
-    # Se il modello è disponibile, verifica la predizione
-    if result['ml_available']:
-        assert result['predicted_severity'] is not None
-        assert 0.0 <= result['ml_confidence'] <= 1.0 
+        # Se il modello è disponibile, verifica la predizione
+        if result['ml_available']:
+            assert result['predicted_severity'] is not None
+            assert 0.0 <= result['ml_confidence'] <= 1.0 
     
     def test_risk_scorer(self):
         '''Test risk scorer'''
