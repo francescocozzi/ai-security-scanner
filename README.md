@@ -144,6 +144,7 @@ pytest
     "low": 2
   }
 }
+```
 
 ## 🔍 Current Checks
 
