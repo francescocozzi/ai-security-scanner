@@ -1,152 +1,170 @@
-TITOLO: AI Security Scanner
-
 # AI Security Scanner
 
-![CI/CD](https://github.com/davidedellisanti90/ai-security-scanner-cyber-sentinel-group/workflows/CI%2FCD%20Pipeline/badge.svg)
+![CI/CD](https://github.com/francescocozzi/ai-security-scanner/workflows/CI%2FCD%20Pipeline/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-![Coverage](https://img.shields.io/codecov/c/github/davidedellisanti90/ai-security-scanner-cyber-sentinel-group)
-![Issues](https://img.shields.io/github/issues/davidedellisanti90/ai-security-scanner-cyber-sentinel-group)
-![Stars](https://img.shields.io/github/stars/davidedellisanti90/ai-security-scanner-cyber-sentinel-group)
+![Coverage](https://img.shields.io/codecov/c/github/francescocozzi/ai-security-scanner/)
+![Issues](https://img.shields.io/github/issues/francescocozzi/ai-security-scanner/)
+![Stars](https://img.shields.io/github/stars/francescocozzi/ai-security-scanner/)
 
-AI-powered security scanner using Nmap...
+## 🔐 Overview
 
---------------------------------------------------------------
-Team Cyber Sentinel
+**AI Security Scanner** is an open-source tool designed to automatically analyze AI/ML projects for potential security risks, dependency vulnerabilities, data leakage concerns, and bad practices.  
+It is useful for DevOps, ML Engineers, security teams, and auditors who want to **detect risks early** in the machine learning pipeline—before deployment.
 
-Il progetto AI Security Scanner è sviluppato da un gruppo di appassionati di cybersecurity e intelligenza artificiale che credono in un futuro in cui la sicurezza sia automatizzata, trasparente e accessibile a tutti.
+The tool scans the project structure, dependencies, datasets, and configuration artifacts, and then generates an HTML dashboard with actionable insights.
 
-Membri del team:
+## 🧠 What It Can Detect
 
-- Ivan Robert D’Arcangelo
+- Security-related patterns and anti-patterns in Python code
+- Vulnerable Python library versions (CVE-based)
+- Dangerous configuration files
+- Indicators of data exposure or leakage
+- ML pipeline hygiene issues (bias, imbalance, drift metadata)
+- Unsafe handling of secrets, tokens, credentials
+- Deprecated cryptographic libraries
 
-- Davide Delli Santi
+## 🖥️ HTML Dashboard Generator
 
-- Salvatore Scaramuzzi
+The repository includes a dashboard generator capable of producing:
+- Vulnerability summaries
+- Visual charts
+- Severity scores
+- Fix recommendations
 
-- Rosita Lavarra
+Ideal for:
+- Security reviews
+- CI/CD pipelines
+- Compliance reports
 
-- Nicola Marella
+## 🚀 Getting Started
 
-- Lorenzo Misino
+### Prerequisites
 
-- Sonia Rendina
+- Python **3.8+**
+- `pip` package manager
+- Basic knowledge of CLI usage
 
-- Vinicius Tadeu Anselmo Leite
+### Installation
 
------------------------------------------------------------------
+Clone the repository:
 
-AI Security Scanner è un progetto open-source che combina la potenza dell’intelligenza artificiale con strumenti di network scanning come Nmap, per rendere le analisi di sicurezza più intelligenti, leggibili e automatizzate.
-
-🚀 Obiettivi del progetto
-
-L’obiettivo è creare un sistema capace di:
-
-Eseguire scansioni automatiche su reti e host.
-Interpretare i risultati delle scansioni attraverso un parser intelligente.
-
-Fornire report chiari e sintetici, supportati da modelli AI.
-
-Automatizzare test e validazioni per garantire affidabilità e scalabilità.
-
-🧩 Struttura del progetto\
-
-ai-security-scanner/
-├── src/
-│   ├── scanner/
-│   │   └── nmap_wrapper.py      # Nmap interface
-│   ├── parser/
-│   │   ├── xml_parser.py        # XML parsing
-│   │   └── json_converter.py    # JSON conversion
-│   └── utils/                    # Utilities
-├── tests/
-│   ├── test_scanner.py          # Scanner tests
-│   ├── test_parser.py           # Parser tests
-│   └── test_converter.py        # Converter tests
-├── examples/
-│   └── complete_scan.py         # Full pipeline example
-├── scan_results/                # Output directory
-├── .github/workflows/           # CI/CD configs
-├── requirements.txt             # Dependencies
-└── README.md                    # This file
-
-⚙️ Setup e dipendenze
-
-Il progetto utilizza Python 3.x e strumenti di sicurezza come Nmap.
-Assicurati di avere entrambi installati.
-
-Installazione su Ubuntu
-sudo apt update
-sudo apt install nmap python3 python3-pip -y
-
-Clona il progetto
-git clone https://github.com/davidedellisanti90/ai-security-scanner-cyber-sentinel-group
+```bash
+git clone https://github.com/francescocozzi/ai-security-scanner.git
 cd ai-security-scanner
+pip install -r requirements.txt
+```
 
-🧠 Come funziona
+Usage Example:
 
-Lo script scanner.py avvia la scansione della rete.
-
-I risultati vengono interpretati dal modulo parser/.
-
-I dati elaborati vengono forniti in formato leggibile o pronti per essere analizzati da un modello AI.
-
-Esempio d’uso:
-
-
-python3 ai-security-scanner-cyber-sentinel-group/examples/complete_scan.py --target 192.168.1.0/24
+python scanner.py \
+    --target ./project_to_analyze \
+    --output ./reports/security_report.html \
+    --config ./config/scanner_config.yaml
 
 
-📘 Documentazione
+Get full CLI help:
 
-La documentazione completa e la bozza dell’architettura del progetto sono disponibili nella cartella /docs.
-Qui vengono descritti:
+python scanner.py --help
 
-Documenti
+⚙️ Configuration
 
-- 🔍 **Automated Network Scanning** - Nmap wrapper with Python
-- 📊 **XML Parsing** - Extract structured data from scan results
-- 🔄 **JSON Conversion** - AI-ready data format
-- 📈 **Summary Generation** - Key metrics and statistics
-- 🧪 **Comprehensive Testing** - 80%+ code coverage with pytest
-- 🚀 **CI/CD Pipeline** - Automated testing with GitHub Actions
-- 📚 **Professional Documentation** - Complete usage guides
+You can customize behavior through a YAML configuration file:
 
-Il flusso logico interno del sistema.
+checks:
+  code_analysis: true
+  dependency_vulnerabilities: true
+  data_exposure: true
 
-L’utente inserisce l’indirizzo IP da analizzare.
+thresholds:
+  max_high_issues: 10
 
-Il modulo scanner/nmap_wrapper.py lancia la scansione con Nmap.
+report:
+  format: html
+  save_path: ./reports
 
-I risultati XML vengono generati in scan_results/.
+📂 Project Structure
+ai-security-scanner/
+├── scanner.py                # Main scanner entry point
+├── modules/                  # Security scanning modules
+├── config/                   # YAML config templates
+├── reports/                  # Generated reports output
+├── dashboard/                # HTML dashboard builder
+├── tests/                    # Unit tests
+└── README.md
 
-Il modulo parser/xml_parser.py legge il file XML.
+✅ Features
 
-Il modulo parser/json_converter.py converte i dati in JSON.
+Static code analysis (Python)
 
-Il sistema mostra i risultati in output o li salva. 
+Dependency vulnerability auditing
 
-Le integrazioni AI previste.
+HTML dashboard reporting
 
-Integrazione di modelli AI per l’analisi dei risultati.
+Severity scoring
 
+Easy CI/CD integration
 
-Le prossime fasi di sviluppo.
+Modular architecture (plug-in friendly)
 
-🔮 Prossimi sviluppi
+🧪 Tests
 
-Generazione automatica di report.
+Run unit tests:
 
-Dashboard web per visualizzare le scansioni in tempo reale.
+pytest
 
-Automazione dei test di sicurezza.
+💡 Roadmap
 
-🤝 Contribuire
+Planned improvements include:
 
-Le pull request sono benvenute!
-Per idee, suggerimenti o collaborazioni, apri una issue o contatta il team.
+AI-assisted code suggestion engine
 
-🧾 Licenza
+Container image scanning
 
-Distribuito sotto licenza MIT — libero di esplorare, modificare e migliorare.
+Secret-leak pattern classification
+
+CLI interactive mode
+
+Export to PDF
+
+🤝 Contributing
+
+Contributions are welcome!
+
+Fork the repository
+
+Create a feature branch:
+git checkout -b feature/my-check
+
+Commit your changes
+git commit -m "Add new scanning plugin"
+
+Push the branch
+git push origin feature/my-check
+
+Open a Pull Request
+
+Please ensure that all tests pass before submitting.
+
+🔒 Security Notice
+
+If you discover a security vulnerability:
+
+Do not open a public issue
+
+Please contact the maintainer privately
+
+Responsible disclosure is appreciated.
+
+📄 License
+
+Distributed under the MIT License.
+See the LICENSE file for more information.
+
+👤 Maintainer
+
+Francesco Cozzi
+GitHub: https://github.com/francescocozzi
+
+For inquiries, open an Issue or Discussion.
