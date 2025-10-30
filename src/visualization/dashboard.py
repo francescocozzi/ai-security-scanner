@@ -4,9 +4,7 @@ Crea dashboard interattivo vulnerabilità
 '''
 
 import os
-import json
 from datetime import datetime
-from pathlib import Path
 
 
 class DashboardGenerator:
@@ -23,7 +21,7 @@ class DashboardGenerator:
         
         Args:
             scan_results: dict con results (from parse_with_ml)
-            plots_dir: directory con grafici
+            plots_dir: directory con grafici (assoluta o relativa alla repo)
             
         Returns:
             str: path al file HTML
@@ -31,8 +29,11 @@ class DashboardGenerator:
         vulnerabilities = scan_results.get('vulnerabilities', [])
         summary = scan_results.get('summary', {})
         
+        # Calcola il path RELATIVO dei plot rispetto alla cartella dove salvi l'HTML (self.output_dir)
+        rel_plots_dir = os.path.relpath(plots_dir, start=self.output_dir).replace(os.sep, '/')
+        
         # Generate HTML
-        html = self._generate_html_template(vulnerabilities, summary, plots_dir)
+        html = self._generate_html_template(vulnerabilities, summary, rel_plots_dir)
         
         # Save
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -48,24 +49,29 @@ class DashboardGenerator:
     def _generate_html_template(self, vulnerabilities, summary, plots_dir):
         '''Generate complete HTML'''
         
-        # Calculate stats
+        # ----- Stats di riepilogo -----
         total = summary.get('total', len(vulnerabilities))
         by_severity = summary.get('by_severity', {})
         by_priority = summary.get('by_priority', {})
-        top_risks = summary.get('top_risks', [])
-        
-        # Count critical/urgent
+        # Count critical/urgent (gestisci chiavi int/str)
         critical_count = by_severity.get('CRITICAL', 0)
-        urgent_count = by_priority.get(1, 0)
+        urgent_count = by_priority.get(1, by_priority.get('1', 0))
+
+        # Average risk (usa ML se c'è, altrimenti CVSS)
+        def _derive_risk(v):
+            ml = v.get('ml_analysis') or {}
+            if isinstance(ml.get('risk_score'), (int, float)):
+                return float(ml['risk_score'])
+            cvss = v.get('cvss_score')
+            try:
+                return float(cvss) if cvss is not None else 0.0
+            except (TypeError, ValueError):
+                return 0.0
+
+        risks_all = [_derive_risk(v) for v in vulnerabilities] if vulnerabilities else []
+        avg_risk = (sum(risks_all) / len(risks_all)) if risks_all else 0.0
         
-        # Average risk
-        ml_vulns = [v for v in vulnerabilities 
-                   if v.get('ml_analysis', {}).get('ml_available')]
-        avg_risk = 0
-        if ml_vulns:
-            risks = [v['ml_analysis']['risk_score'] for v in ml_vulns]
-            avg_risk = sum(risks) / len(risks)
-        
+        # ----- HTML head & layout -----
         html = f'''<!DOCTYPE html>
 <html lang="it">
 <head>
@@ -281,40 +287,78 @@ class DashboardGenerator:
         <div class="vulnerability-list">
             <h2>🚨 Top 10 Highest Risk Vulnerabilities</h2>
 '''
-        
-        # Add top 10 vulnerabilities
-        ml_vulns = [v for v in vulnerabilities 
-                   if v.get('ml_analysis', {}).get('ml_available')]
-        top_10 = sorted(ml_vulns, 
-                       key=lambda x: x['ml_analysis']['risk_score'],
-                       reverse=True)[:10]
-        
-        for vuln in top_10:
-            cve_id = vuln.get('cve_id', 'Unknown')
-            severity = vuln.get('severity', 'UNKNOWN').lower()
-            cvss = vuln.get('cvss_score', 0)
-            ml = vuln.get('ml_analysis', {})
-            risk = ml.get('risk_score', 0)
-            priority = ml.get('priority', 4)
-            recommendation = ml.get('recommendation', '')
-            
-            html += f'''
-            <div class="vulnerability-item {severity}">
-                <div class="vuln-header">
-                    <span class="vuln-cve">{cve_id}</span>
-                    <span class="vuln-score">Risk: {risk:.2f}/10</span>
-                </div>
-                <div>
-                    <strong>CVSS:</strong> {cvss} | 
-                    <strong>Severity:</strong> {severity.upper()} | 
-                    <strong>Priority:</strong> {priority}
-                </div>
-                <div class="recommendation">
-                    💡 {recommendation}
-                </div>
+        # ----- Sezione TOP 10 (funzioni helper annidate) -----
+        def _priority_from(v):
+            ml = v.get('ml_analysis') or {}
+            pr = ml.get('priority')
+            if isinstance(pr, int):
+                return pr
+            sev = (v.get('severity') or 'UNKNOWN').upper()
+            return {'CRITICAL': 1, 'HIGH': 2, 'MEDIUM': 3, 'LOW': 4}.get(sev, 4)
+
+        def _risk_from(v):
+            ml = v.get('ml_analysis') or {}
+            r = ml.get('risk_score')
+            if isinstance(r, (int, float)):
+                return float(r)
+            cvss = v.get('cvss_score')
+            try:
+                return float(cvss) if cvss is not None else 0.0
+            except (TypeError, ValueError):
+                return 0.0
+
+        def _rec_from(priority):
+            if priority == 1:
+                return '🔴 Azione immediata: isolare, patchare, mitigare entro 24h.'
+            if priority == 2:
+                return '🟠 Mitigazione entro 7 giorni: applicare patch e controlli.'
+            if priority == 3:
+                return '🟡 Pianificare fix: inserire in sprint/maintenance.'
+            return '🟢 Monitorare e documentare: rischio basso.'
+
+        # Costruisci candidati ordinabili
+        candidates = []
+        for v in vulnerabilities:
+            pr = _priority_from(v)
+            rk = _risk_from(v)
+            rec = (v.get('ml_analysis') or {}).get('recommendation') or _rec_from(pr)
+            candidates.append((rk, pr, rec, v))
+
+        # Ordina per rischio desc, poi priorità asc (1 più urgente)
+        candidates = sorted(candidates, key=lambda t: (-t[0], t[1]))
+        top_10 = candidates[:10]
+
+        if not top_10:
+            html += '''
+            <div class="vulnerability-item">
+                Nessuna vulnerabilità con punteggio disponibile. 
+                Assicurati di aver importato correttamente i risultati o abilitato l’analisi ML.
             </div>
-'''
+            '''
+        else:
+            for rk, pr, rec, vuln in top_10:
+                cve_id = vuln.get('cve_id', 'Unknown')
+                severity = (vuln.get('severity', 'UNKNOWN') or 'UNKNOWN').lower()
+                cvss = vuln.get('cvss_score', 0)
+
+                html += f'''
+                <div class="vulnerability-item {severity}">
+                    <div class="vuln-header">
+                        <span class="vuln-cve">{cve_id}</span>
+                        <span class="vuln-score">Risk: {rk:.2f}/10</span>
+                    </div>
+                    <div>
+                        <strong>CVSS:</strong> {cvss} | 
+                        <strong>Severity:</strong> {severity.upper()} | 
+                        <strong>Priority:</strong> {pr}
+                    </div>
+                    <div class="recommendation">
+                        💡 {rec}
+                    </div>
+                </div>
+                '''
         
+        # ----- Footer & chiusura -----
         html += '''
         </div>
         
@@ -326,12 +370,11 @@ class DashboardGenerator:
 </body>
 </html>
 '''
-        
         return html
 
 
 if __name__ == '__main__':
-    # Test
+    # Test manuale
     print('='*60)
     print('TEST DASHBOARD GENERATOR')
     print('='*60)
@@ -373,5 +416,5 @@ if __name__ == '__main__':
     generator = DashboardGenerator()
     filepath = generator.generate_dashboard(test_results)
     
-    print(f'\\n✓ Apri con browser: {filepath}')
+    print(f'\n✓ Apri con browser: {filepath}')
     print('='*60)
