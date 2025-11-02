@@ -260,7 +260,7 @@ MIT — free for commercial use.
 
 ## 👤 Maintainer
 
-**Francesco Cozzi (IZ7KHR)**  
+**Francesco Cozzi**  
 GitHub: https://github.com/francescocozzi
 
 ---
