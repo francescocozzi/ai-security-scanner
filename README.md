@@ -5,50 +5,50 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![CI](https://github.com/francescocozzi/ai-security-scanner/actions/workflows/ci.yml/badge.svg)
 
-**AI Security Scanner** è uno strumento open-source per l’analisi automatizzata delle vulnerabilità in ambienti DevSecOps, pipeline CI/CD e infrastrutture applicative.  
-Integra analisi ML, punteggi di rischio normalizzati, correlazione con dati NVD e generazione di report interattivi.
+**AI Security Scanner** is an open-source tool for automated vulnerability analysis in DevSecOps environments, CI/CD pipelines, and application infrastructures.  
+It integrates ML-based analysis, normalized risk scoring, NVD enrichment, and interactive reporting.
 
-✅ Ideale per penetration tester, SOC, DevOps, analisti sicurezza  
-✅ Esegue ingest di scansioni Nmap XML  
-✅ Assegna risk score ML-driven  
-✅ Produce report HTML interattivi + grafici
+✅ Ideal for penetration testers, SOC analysts, DevOps, security engineers  
+✅ Ingests and parses Nmap XML scans  
+✅ Assigns normalized ML-driven risk scores  
+✅ Produces interactive HTML dashboards + charts
 
 ---
 
-## 🔍 Funzionalità principali
+## 🔍 Key Capabilities
 
-- Parsing avanzato di vulnerabilità (Nmap XML)
-- Integrazione facoltativa con NVD API (CVSS v3/v3.1)
-- Normalizzazione del **risk_score**
-- Calcolo della **priority** per triage operativo
-- Rappresentazione grafica:
+- Advanced parsing of vulnerabilities (Nmap XML)
+- Optional enrichment via NVD API (CVSS v3/v3.1)
+- Normalization of **risk_score**
+- Automatic **priority** calculation for triage
+- Visualization plots:
   - Severity distribution
   - Priority distribution
-  - Risk score distribution
-  - Top vulnerabilities (deduplicate by CVE)
-- Dashboard HTML responsive e stampabile
-- JSON completo per integrazioni esterne
+  - Risk score histogram
+  - Top vulnerabilities (deduplicated by CVE)
+- Responsive HTML dashboard
+- Full JSON export for system integration
 
 ---
 
-## 🧠 Come funziona
+## 🧠 How It Works
 
-Durante l’elaborazione:
+Processing pipeline:
 
-1. Le vulnerabilità vengono estratte dal report
-2. Se richiesto, vengono arricchite con dati **NVD** (CVSS)
-3. Si applica un modello ML (lightweight) per scoring
-4. Si normalizza il punteggio combinando:
+1. Vulnerabilities are extracted from the scan report
+2. (Optional) NVD CVSS data is fetched
+3. A lightweight ML model generates risk signals
+4. Scores are normalized using:
    - ML risk score  
    - CVSS  
    - Severity fallback  
-   - Priority map
-5. Viene generato un **dashboard HTML interattivo**
-6. Si salvano grafici PNG e report JSON completi
+   - Priority mapping
+5. An **interactive HTML dashboard** is generated
+6. Plots and JSON metadata are saved for auditing
 
 ---
 
-## 📦 Installazione
+## 📦 Installation
 
 ```bash
 git clone https://github.com/francescocozzi/ai-security-scanner.git
@@ -56,19 +56,19 @@ cd ai-security-scanner
 pip install -r requirements.txt
 ```
 
-Richiede Python ≥ 3.10.
+Requires Python ≥ 3.10.
 
 ---
 
-## 🚀 Utilizzo rapido
+## 🚀 Quick Usage
 
-Generazione report completo da scan Nmap XML:
+Generate a full report from an Nmap XML file:
 
 ```bash
 python examples/generate_report.py scan_full.xml --nvd
 ```
 
-Apri subito il dashboard:
+Open the dashboard:
 
 ```bash
 xdg-open reports/dashboard_*.html
@@ -76,7 +76,7 @@ xdg-open reports/dashboard_*.html
 
 ---
 
-## 📤 Esempio output (CLI)
+## 📤 Example Output (CLI)
 
 ```
 [STEP 1/5] Parsing and ML Analysis...
@@ -100,9 +100,9 @@ xdg-open reports/dashboard_*.html
 
 ---
 
-## ⚙️ Configurazione
+## ⚙️ Configuration
 
-Puoi abilitare/disabilitare controlli:
+Enable/disable checks:
 
 ```yaml
 nvd:
@@ -115,23 +115,23 @@ analysis:
 
 ---
 
-## 📁 Struttura del progetto
+## 📁 Project Structure
 
 ```
 ai-security-scanner/
 ├── examples/
-│   └── generate_report.py        # Entry per report pipeline
-├── reports/                      # Output generati
+│   └── generate_report.py        # Reporting pipeline entry point
+├── reports/                      # Generated output
 ├── src/
 │   ├── parser/
-│   │   └── xml_parser.py         # Ingest Nmap XML
+│   │   └── xml_parser.py         # Nmap XML ingestion
 │   ├── security/
 │   │   ├── attack_surface.py
 │   │   ├── threat_model.py
 │   │   └── recommendations.py
 │   └── visualization/
-│       ├── plotter.py            # Grafici (matplotlib)
-│       └── dashboard.py          # Dashboard HTML
+│       ├── plotter.py            # Matplotlib visualizations
+│       └── dashboard.py          # HTML rendering
 ├── requirements.txt
 ├── README.md
 ├── LICENSE
@@ -142,14 +142,14 @@ ai-security-scanner/
 
 ## 🧮 Risk Score Normalization
 
-La pipeline massimizza il punteggio fra:
+The pipeline takes the **maximum** score across:
 
 - ML risk
 - CVSS baseScore
 - Severity mapping
 - Priority mapping
 
-Formula (semplificata):
+Simplified formula:
 
 ```
 risk_normalized = max(
@@ -160,41 +160,41 @@ risk_normalized = max(
 )
 ```
 
-Priorità assegnata automaticamente:
+Priority thresholds:
 
-| Risk score | Priority | Azione |
+| Risk score | Priority | Action |
 |------------|----------|--------|
-| ≥ 9.0      | P1       | Immediata |
-| ≥ 7.0      | P2       | Rapida |
-| ≥ 4.0      | P3       | Pianificata |
-| < 4.0      | P4       | Monitoraggio |
+| ≥ 9.0      | P1       | Immediate mitigation |
+| ≥ 7.0      | P2       | High priority |
+| ≥ 4.0      | P3       | Planned fix |
+| < 4.0      | P4       | Monitor |
 
 ---
 
-## 📊 Grafici generati
+## 📊 Generated Charts
 
 - **Severity Distribution**
 - **Priority Distribution**
 - **Risk Score Histogram**
-- **Top Vulnerabilities** *(deduplicate by CVE)*
+- **Top Vulnerabilities** *(deduplicated by CVE)*
 
 ---
 
 ## 🖥️ Dashboard
 
-Interattivo, exportabile come PDF, sezioni:
+Interactive, printable, structured into:
 
-- KPI
-- Charts
-- Riepilogo Priority/Severity
-- Top 10 Highest-Risk (dedup)
-- Raccomandazioni
+- High-level KPIs
+- Visual charts
+- Priority/Severity breakdown
+- Top 10 highest-risk vulnerabilities
+- Mitigation recommendations
 
 ---
 
-## 🔌 Integrazione CI/CD
+## 🔌 CI/CD Integration
 
-Esempio di fail della pipeline se presenti P1:
+Example pipeline step that fails on P1 findings:
 
 ```bash
 grep '"priority": 1' scan_full_complete_report.json \
@@ -203,7 +203,7 @@ grep '"priority": 1' scan_full_complete_report.json \
 
 ---
 
-## 🧪 Test
+## 🧪 Tests
 
 ```bash
 pytest
@@ -213,31 +213,30 @@ pytest
 
 ## 🔐 Security Notes
 
-Se trovi una vulnerabilità nella repo:
+If you discover an issue:
 
-- **Non** aprire un issue pubblico
-- Contatta privatamente il maintainer
+- **Do not** open a public GitHub issue
+- Reach out privately
 
-Responsible disclosure welcome.
+Responsible disclosure is appreciated.
 
 ---
 
 ## ⚠️ Disclaimer
 
-Questo tool **non sostituisce**
-un’analisi di sicurezza umana.  
-È un acceleratore di triage e prioritizzazione.
+This tool does **not** replace human security review.  
+It accelerates triage—but expert analysis is still required.
 
 ---
 
 ## 📍 Roadmap
 
-- Export PDF nativo
+- Native PDF export
 - Plugin architecture (OWASP checks)
 - Container image scanning
 - SBOM ingestion
-- Secret-detection ML
-- Delta scan (trend history)
+- ML-based secret detection
+- Trend / delta history
 
 ---
 
@@ -247,21 +246,21 @@ un’analisi di sicurezza umana.
 2. `git checkout -b feature/...`
 3. Commit
 4. Push
-5. PR
+5. Open a PR
 
-Con test verdi 😉
+Please ensure tests pass ✅
 
 ---
 
 ## 📜 License
 
-MIT — libero utilizzo anche commerciale.
+MIT — free for commercial use.
 
 ---
 
 ## 👤 Maintainer
 
-**Francesco Cozzi**  
+**Francesco Cozzi (IZ7KHR)**  
 GitHub: https://github.com/francescocozzi
 
 ---
