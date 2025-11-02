@@ -283,125 +283,92 @@ class VulnerabilityPlotter:
         return filepath
     
     def plot_top_vulnerabilities(self, vulnerabilities, top_n=10, filename='top_vulns.png'):
-        '''Grafico barre top N vulnerabilità più rischiose'''
-        import re
+        """Grafico barre top N vulnerabilità più rischiose (DEDUP per CVE)"""
+        # Mappature per fallback risk da severity
+        sev_to_score = {"CRITICAL": 9.5, "HIGH": 8.0, "MEDIUM": 5.5, "LOW": 3.0, "INFO": 1.0}
 
-        PRI_TO_SCORE = {1: 9.5, 2: 8.0, 3: 5.5, 4: 3.0}
-
-        def _first_float(x):
+        def _as_float(x):
             try:
                 return float(x)
             except Exception:
                 return None
 
-        def _walk_cvss_scores(obj):
-            key_regex = re.compile(r'(base\s*_?score|cvss.*score|^score$)', re.IGNORECASE)
-            stack = [obj]
-            while stack:
-                cur = stack.pop()
-                if isinstance(cur, dict):
-                    for k in ("baseScore","base_score","score","cvss3_score","cvss_v3","cvss_v31","cvss_v30","cvss_v2","cvss"):
-                        if k in cur:
-                            val = cur[k]
-                            if isinstance(val, dict):
-                                for kk in ("baseScore","base_score","score"):
-                                    if kk in val:
-                                        f = _first_float(val[kk])
-                                        if f is not None and 0 <= f <= 10:
-                                            return f
-                            else:
-                                f = _first_float(val)
-                                if f is not None and 0 <= f <= 10:
-                                    return f
-                    for k, v in cur.items():
-                        if key_regex.search(str(k)):
-                            f = _first_float(v if not isinstance(v, dict) else v.get("baseScore") or v.get("score"))
-                            if f is not None and 0 <= f <= 10:
-                                return f
-                    stack.extend(cur.values())
-                elif isinstance(cur, (list, tuple)):
-                    stack.extend(cur)
-            return None
-
-        def _score(v):
+        def _risk_for(v):
+            # 1) dati ML normalizzati/legacy
             ml = self._get_ml_data(v)
-            r = ml.get('risk_score') if ml else None
-            if r is None:
-                r = v.get('risk_score')
-            r = _first_float(r)
-            if r is None:
-                r = _walk_cvss_scores(v) or _walk_cvss_scores(v.get('nvd', {}))
-            if r is None:
-                # fallback da PRIORITY
-                p = None
-                if ml:
-                    p = ml.get('priority')
-                if p is None:
-                    p = v.get('priority') or v.get('ml_priority')
-                try:
-                    p = int(p) if p is not None else None
-                except Exception:
-                    p = None
-                if p in PRI_TO_SCORE:
-                    r = PRI_TO_SCORE[p]
-            if r is None:
-                sev = (v.get('severity') or '').upper()
-                r = {"CRITICAL": 9.5, "HIGH": 8.0, "MEDIUM": 5.5, "LOW": 3.0}.get(sev, 0.0)
-            return float(r or 0.0)
+            if ml and _as_float(ml.get('risk_score')) is not None:
+                return float(ml['risk_score'])
+            # 2) top-level risk_score
+            if _as_float(v.get('risk_score')) is not None:
+                return float(v.get('risk_score'))
+            # 3) fallback da severity
+            sev = (v.get('severity') or '').upper()
+            return float(sev_to_score.get(sev, 0.0))
 
-        scored = []
-        for v in vulnerabilities:
-            r = _score(v)
-            if r > 0:
-                vv = v.copy()
-                vv['_risk'] = r
-                scored.append(vv)
-        
-        if not scored:
+        # ---- DEDUP PER CVE: tieni la riga con rischio max per ciascun CVE
+        best_by_cve = {}
+        # per evitare di collassare tutto ciò che non ha CVE, assegniamo chiavi uniche
+        for idx, v in enumerate(vulnerabilities):
+            cve = v.get('cve_id')
+            key = cve if cve else f'__NO_CVE__#{idx}'
+            r = _risk_for(v)
+
+            # salva anche una severità rappresentativa per il colore/etichetta
+            sev = (v.get('severity') or 'UNKNOWN').upper()
+            if (key not in best_by_cve) or (r > best_by_cve[key]['_risk']):
+                best_by_cve[key] = {
+                    '_risk': r,
+                    '_sev': sev,
+                    '_label': cve or (v.get('id') or v.get('name') or f'Unknown #{idx}')
+                }
+
+        # lista ordinata per rischio desc, prendi top_n
+        rows = sorted(best_by_cve.values(), key=lambda x: x['_risk'], reverse=True)[:top_n]
+
+        if not rows:
             print('⚠ Nessuna vulnerabilità con ML disponibile')
             return None
-        
-        sorted_vulns = sorted(scored, key=lambda x: x['_risk'], reverse=True)[:top_n]
-        
-        # Prepare data
-        cve_ids = [(v.get('cve_id') or v.get('id') or v.get('name') or 'Unknown')[:60] for v in sorted_vulns]
-        risk_scores = [v['_risk'] for v in sorted_vulns]
-        
-        # Create horizontal bar chart
-        fig, ax = plt.subplots(figsize=(10, max(6, len(cve_ids) * 0.4)))
-        
-        # Color by risk level
+
+        # Dati per il grafico
+        labels = [str(r['_label'])[:60] for r in rows]
+        risk_scores = [r['_risk'] for r in rows]
+
+        # Colori in base al risk
         colors = []
         for score in risk_scores:
-            if score >= 9:   colors.append('#d32f2f')
-            elif score >= 7: colors.append('#f57c00')
-            elif score >= 4: colors.append('#fbc02d')
-            else:            colors.append('#388e3c')
-        
-        bars = ax.barh(range(len(cve_ids)), risk_scores, color=colors, alpha=0.8)
-        
-        # Add value labels
-        for i, (bar, score) in enumerate(zip(bars, risk_scores)):
+            if score >= 9:
+                colors.append('#d32f2f')
+            elif score >= 7:
+                colors.append('#f57c00')
+            elif score >= 4:
+                colors.append('#fbc02d')
+            else:
+                colors.append('#388e3c')
+
+        # Grafico barre orizzontali
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(10, max(6, len(labels) * 0.4)))
+        bars = ax.barh(range(len(labels)), risk_scores, color=colors, alpha=0.8)
+
+        # Valori sulle barre
+        for bar, score in zip(bars, risk_scores):
             ax.text(score + 0.1, bar.get_y() + bar.get_height()/2.,
-                   f'{score:.2f}',
-                   va='center', fontsize=10, weight='bold')
-        
-        ax.set_yticks(range(len(cve_ids)))
-        ax.set_yticklabels(cve_ids)
+                    f'{score:.2f}', va='center', fontsize=10, weight='bold')
+
+        ax.set_yticks(range(len(labels)))
+        ax.set_yticklabels(labels)
         ax.set_xlabel('Risk Score', fontsize=12, weight='bold')
-        ax.set_title(f'Top {len(sorted_vulns)} Highest Risk Vulnerabilities', 
-                    fontsize=14, weight='bold')
+        ax.set_title(f'Top {len(rows)} Highest Risk Vulnerabilities (dedup by CVE)',
+                     fontsize=14, weight='bold')
         ax.set_xlim(0, 10)
-        
-        # Grid
         ax.grid(axis='x', alpha=0.3)
-        
-        # Save
+
+        # Salva
         filepath = os.path.join(self.output_dir, filename)
         plt.tight_layout()
         plt.savefig(filepath, dpi=150, bbox_inches='tight')
         plt.close()
-        
+
         print(f'✓ Salvato: {filepath}')
         return filepath
     

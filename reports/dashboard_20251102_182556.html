@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Security Report Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+:root {
+  --bg: #0f172a; /* slate-900 */
+  --card: #111827; /* gray-900 */
+  --muted: #9ca3af; /* gray-400 */
+  --fg: #e5e7eb; /* gray-200 */
+  --accent: #22d3ee; /* cyan-400 */
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --yellow: #fbbf24;
+  --green: #22c55e;
+  --shadow: rgba(0,0,0,.3);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial;
+  background: radial-gradient(1200px 800px at 10% -10%, #1f2937 0%, var(--bg) 50%);
+  color: var(--fg);
+}
+h1,h2,h3 { margin: 0 0 8px; }
+.grid {
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(12, minmax(0,1fr));
+}
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px var(--shadow);
+  padding: 16px;
+}
+.kpi { font-size: 32px; font-weight: 800; letter-spacing: .5px; }
+.kpi-sub { color: var(--muted); font-size: 12px; }
+.badge { padding: 4px 8px; border-radius: 999px; font-size: 12px; }
+.badge.red { background: rgba(239,68,68,.15); color: var(--fg); border: 1px solid rgba(239,68,68,.45); }
+.badge.orange { background: rgba(245,158,11,.15); color: var(--fg); border: 1px solid rgba(245,158,11,.45); }
+.badge.yellow { background: rgba(251,191,36,.15); color: var(--fg); border: 1px solid rgba(251,191,36,.45); }
+.badge.green { background: rgba(34,197,94,.15); color: var(--fg); border: 1px solid rgba(34,197,94,.45); }
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 14px; vertical-align: top; }
+.table th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 12px; }
+.small { color: var(--muted); font-size: 12px; }
+.row {
+  display: grid; gap: 16px; margin-bottom: 16px;
+  grid-template-columns: repeat(12, minmax(0,1fr));
+}
+.span-3 { grid-column: span 3 / span 3; }
+.span-4 { grid-column: span 4 / span 4; }
+.span-6 { grid-column: span 6 / span 6; }
+.span-8 { grid-column: span 8 / span 8; }
+.span-12 { grid-column: span 12 / span 12; }
+img.plot { width: 100%; height: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,.08); }
+.footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
+hr.sep { border: none; border-top: 1px solid rgba(255,255,255,.08); margin: 8px 0 16px 0; }
+</style>
+</head>
+<body>
+
+        <h1>Security Report Dashboard</h1>
+        <div class="small">Generated: 2025-11-02 18:25:56</div>
+        
+        <div class="row">
+          
+            <div class="card span-3">
+              <div class="kpi">51</div>
+              <div class="small">Total Vulnerabilities</div>
+              <div class="kpi-sub">Generated: 2025-11-02 18:25:56</div>
+            </div>
+            
+          
+            <div class="card span-3">
+              <div class="kpi">6.65</div>
+              <div class="small">Average Risk Score (normalized)</div>
+              <div class="kpi-sub">Based on risk_score</div>
+            </div>
+            
+          
+            <div class="card span-3">
+              <div class="kpi">6</div>
+              <div class="small">Critical (severity)</div>
+              
+            </div>
+            
+          
+            <div class="card span-3">
+              <div class="kpi">22</div>
+              <div class="small">High (severity)</div>
+              
+            </div>
+            
+        </div>
+        
+        
+        <div class="row">
+          <div class="card span-4">
+            <h3>Severity Summary</h3>
+            <hr class="sep" />
+            <ul class="small"><li>CRITICAL: 6</li><li>HIGH: 22</li><li>MEDIUM: 8</li><li>LOW: 13</li><li>UNKNOWN: 2</li></ul>
+          </div>
+          <div class="card span-4">
+            <h3>Priority Summary</h3>
+            <hr class="sep" />
+            <ul class="small"><li>P1 (URGENT): 6</li><li>P2 (HIGH): 22</li><li>P3 (MEDIUM): 10</li><li>P4 (LOW): 13</li></ul>
+          </div>
+          <div class="card span-4">
+            <h3>Notes</h3>
+            <hr class="sep" />
+            <div class="small">
+              Scores and Top lists use <b>risk_score</b> normalized by the pipeline.<br/>
+              Average risk is computed from those values to ensure JSON ⇄ HTML coherence.
+            </div>
+          </div>
+        </div>
+        
+        
+        <div class="row">
+          
+            <div class="card span-6">
+              <h3>Severity Distribution</h3>
+              <hr class="sep" />
+              <img class="plot" src="reports/plots/severity_dist.png" alt="Severity Distribution" />
+            </div>
+            
+          
+            <div class="card span-6">
+              <h3>Priority Distribution</h3>
+              <hr class="sep" />
+              <img class="plot" src="reports/plots/priority_dist.png" alt="Priority Distribution" />
+            </div>
+            
+        </div>
+        <div class="row">
+          
+            <div class="card span-6">
+              <h3>Risk Score Distribution</h3>
+              <hr class="sep" />
+              <img class="plot" src="reports/plots/risk_dist.png" alt="Risk Score Distribution" />
+            </div>
+            
+          
+            <div class="card span-6">
+              <h3>Top Vulnerabilities (by risk_score)</h3>
+              <hr class="sep" />
+              <img class="plot" src="reports/plots/top_vulns.png" alt="Top Vulnerabilities (by risk_score)" />
+            </div>
+            
+        </div>
+        
+        <div class="row">
+          
+        <div class="card span-12">
+          <h3>Top 10 Highest Risk (dedup by CVE, IP, Port)</h3>
+          <hr class="sep" />
+          <table class="table">
+            <thead>
+              <tr>
+                <th>CVE</th>
+                <th>Risk</th>
+                <th>Priority</th>
+                <th>Severity</th>
+                <th>Host:Port</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            <tr>
+              <td><code>CVE-2017-14493</code></td>
+              <td><span class="badge red">9.80</span></td>
+              <td>P1</td>
+              <td>CRITICAL</td>
+              <td>192.168.1.1:53 domain</td>
+              <td class="small">Stack-based buffer overflow in dnsmasq before 2.78 allows remote attackers to cause a denial of service (crash) or execute arbitrary code via a crafted DHCPv6 request.</td>
+            </tr>
+            
+            <tr>
+              <td><code>CVE-2017-14492</code></td>
+              <td><span class="badge red">9.80</span></td>
+              <td>P1</td>
+              <td>CRITICAL</td>
+              <td>192.168.1.1:53 domain</td>
+              <td class="small">Heap-based buffer overflow in dnsmasq before 2.78 allows remote attackers to cause a denial of service (crash) or execute arbitrary code via a crafted IPv6 router advertisement re…</td>
+            </tr>
+            
+            <tr>
+              <td><code>CVE-2017-14491</code></td>
+              <td><span class="badge red">9.80</span></td>
+              <td>P1</td>
+              <td>CRITICAL</td>
+              <td>192.168.1.1:53 domain</td>
+              <td class="small">Heap-based buffer overflow in dnsmasq before 2.78 allows remote attackers to cause a denial of service (crash) or execute arbitrary code via a crafted DNS response.</td>
+            </tr>
+            
+            <tr>
+              <td><code>CVE-2020-25682</code></td>
+              <td><span class="badge orange">8.10</span></td>
+              <td>P2</td>
+              <td>HIGH</td>
+              <td>192.168.1.1:53 domain</td>
+              <td class="small">A flaw was found in dnsmasq before 2.83. A buffer overflow vulnerability was discovered in the way dnsmasq extract names from DNS packets before validating them with DNSSEC data. …</td>
+            </tr>
+            
+            <tr>
+              <td><code>CVE-2020-25681</code></td>
+              <td><span class="badge orange">8.10</span></td>
+              <td>P2</td>
+              <td>HIGH</td>
+              <td>192.168.1.1:53 domain</td>
+              <td class="small">A flaw was found in dnsmasq before version 2.83. A heap-based buffer overflow was discovered in the way RRSets are sorted before validating with DNSSEC data. An attacker on the ne…</td>
+            </tr>
+            
+            <tr>
+              <td><code>CVE-2017-14496</code></td>
+              <td><span class="badge orange">8.00</span></td>
+              <td>P2</td>
+              <td>HIGH</td>
+              <td>192.168.1.1:53 domain</td>
+              <td class="small">Integer underflow in the add_pseudoheader function in dnsmasq before 2.78 , when the --add-mac, --add-cpe-id or --add-subnet option is specified, allows remote attackers to cause …</td>
+            </tr>
+            
+            <tr>
+              <td><code>CVE-2023-50387</code></td>
+              <td><span class="badge orange">8.00</span></td>
+              <td>P2</td>
+              <td>HIGH</td>
+              <td>192.168.1.1:53 domain</td>
+              <td class="small">Certain DNSSEC aspects of the DNS protocol (in RFC 4033, 4034, 4035, 6840, and related RFCs) allow remote attackers to cause a denial of service (CPU consumption) via one or more …</td>
+            </tr>
+            
+            <tr>
+              <td><code>CVE-2023-28450</code></td>
+              <td><span class="badge orange">8.00</span></td>
+              <td>P2</td>
+              <td>HIGH</td>
+              <td>192.168.1.1:53 domain</td>
+              <td class="small">An issue was discovered in Dnsmasq before 2.90. The default maximum EDNS.0 UDP packet size was set to 4096 but should be 1232 because of DNS Flag Day 2020.</td>
+            </tr>
+            
+            <tr>
+              <td><code>CVE-2022-0934</code></td>
+              <td><span class="badge orange">8.00</span></td>
+              <td>P2</td>
+              <td>HIGH</td>
+              <td>192.168.1.1:53 domain</td>
+              <td class="small">A single-byte, non-arbitrary write/use-after-free flaw was found in dnsmasq. This flaw allows an attacker who sends a crafted packet processed by dnsmasq, potentially causing a de…</td>
+            </tr>
+            
+            <tr>
+              <td><code>CVE-2019-14513</code></td>
+              <td><span class="badge orange">8.00</span></td>
+              <td>P2</td>
+              <td>HIGH</td>
+              <td>192.168.1.1:53 domain</td>
+              <td class="small">Improper bounds checking in Dnsmasq before 2.76 allows an attacker controlled DNS server to send large DNS packets that result in a read operation beyond the buffer allocated for …</td>
+            </tr>
+            
+            </tbody>
+          </table>
+        </div>
+        
+        </div>
+        
+<div class="footer">Generated by AI Security Scanner</div>
+</body>
+</html>
