@@ -41,6 +41,26 @@ class VulnerabilityPlotter:
             4: '#388e3c'   # Low - Green
         }
     
+    def _get_ml_data(self, vuln):
+        """
+        🆕 Helper per estrarre dati ML da formato variabile
+        Supporta sia ml_analysis nested che campi diretti
+        """
+        # Prova prima con ml_analysis (formato nested)
+        ml = vuln.get('ml_analysis', {})
+        if ml and ml.get('ml_available'):
+            return ml
+        
+        # Fallback: campi diretti (formato flat)
+        if vuln.get('ml_available') or vuln.get('risk_score') or vuln.get('priority'):
+            return {
+                'ml_available': vuln.get('ml_available', False),
+                'risk_score': vuln.get('risk_score', 0),
+                'priority': vuln.get('priority') or vuln.get('ml_priority', 4)
+            }
+        
+        return None
+    
     def plot_severity_distribution(self, vulnerabilities, filename='severity_dist.png'):
         '''
         Grafico a torta distribuzione severity
@@ -88,13 +108,14 @@ class VulnerabilityPlotter:
         
         print(f'✓ Salvato: {filepath}')
         return filepath
+    
     def plot_priority_distribution(self, vulnerabilities, filename='priority_dist.png'):
         '''Grafico barre distribuzione priorità ML'''
-        # Count by priority
+        # Count by priority - 🔧 FIXED
         priority_counts = {}
         for vuln in vulnerabilities:
-            ml = vuln.get('ml_analysis', {})
-            if ml.get('ml_available'):
+            ml = self._get_ml_data(vuln)
+            if ml:
                 priority = ml.get('priority', 4)
                 priority_counts[priority] = priority_counts.get(priority, 0) + 1
         
@@ -138,12 +159,14 @@ class VulnerabilityPlotter:
     
     def plot_risk_score_distribution(self, vulnerabilities, filename='risk_dist.png'):
         '''Istogramma distribuzione risk score'''
-        # Extract risk scores
+        # Extract risk scores - 🔧 FIXED
         risk_scores = []
         for vuln in vulnerabilities:
-            ml = vuln.get('ml_analysis', {})
-            if ml.get('ml_available'):
-                risk_scores.append(ml.get('risk_score', 0))
+            ml = self._get_ml_data(vuln)
+            if ml:
+                risk_score = ml.get('risk_score', 0)
+                if risk_score > 0:  # Solo risk score validi
+                    risk_scores.append(risk_score)
         
         if not risk_scores:
             print('⚠ Nessun risk score disponibile')
@@ -187,12 +210,17 @@ class VulnerabilityPlotter:
     
     def plot_top_vulnerabilities(self, vulnerabilities, top_n=10, filename='top_vulns.png'):
         '''Grafico barre top N vulnerabilità più rischiose'''
-        # Filter and sort by risk score
-        ml_vulns = [v for v in vulnerabilities 
-                   if v.get('ml_analysis', {}).get('ml_available')]
+        # Filter and sort by risk score - 🔧 FIXED
+        ml_vulns = []
+        for v in vulnerabilities:
+            ml = self._get_ml_data(v)
+            if ml and ml.get('risk_score', 0) > 0:
+                v_copy = v.copy()
+                v_copy['_ml_data'] = ml
+                ml_vulns.append(v_copy)
         
         sorted_vulns = sorted(ml_vulns, 
-                            key=lambda x: x['ml_analysis'].get('risk_score', 0),
+                            key=lambda x: x['_ml_data'].get('risk_score', 0),
                             reverse=True)[:top_n]
         
         if not sorted_vulns:
@@ -201,7 +229,7 @@ class VulnerabilityPlotter:
         
         # Prepare data
         cve_ids = [v.get('cve_id', 'Unknown')[:15] for v in sorted_vulns]
-        risk_scores = [v['ml_analysis']['risk_score'] for v in sorted_vulns]
+        risk_scores = [v['_ml_data']['risk_score'] for v in sorted_vulns]
         
         # Create horizontal bar chart
         fig, ax = plt.subplots(figsize=(10, max(6, len(cve_ids) * 0.4)))
@@ -277,42 +305,27 @@ if __name__ == '__main__':
     print('TEST PLOTTER')
     print('='*60)
     
-    # Mock data
+    # Mock data - test both formats
     test_vulns = [
+        # Format 1: ml_analysis nested
         {
             'cve_id': 'CVE-2024-0001',
             'severity': 'CRITICAL',
             'ml_analysis': {'ml_available': True, 'risk_score': 9.5, 'priority': 1}
         },
+        # Format 2: flat fields
         {
             'cve_id': 'CVE-2024-0002',
             'severity': 'CRITICAL',
-            'ml_analysis': {'ml_available': True, 'risk_score': 9.2, 'priority': 1}
+            'ml_available': True,
+            'risk_score': 9.2,
+            'priority': 1
         },
         {
             'cve_id': 'CVE-2024-0003',
             'severity': 'HIGH',
-            'ml_analysis': {'ml_available': True, 'risk_score': 7.8, 'priority': 2}
-        },
-        {
-            'cve_id': 'CVE-2024-0004',
-            'severity': 'HIGH',
-            'ml_analysis': {'ml_available': True, 'risk_score': 7.3, 'priority': 2}
-        },
-        {
-            'cve_id': 'CVE-2024-0005',
-            'severity': 'MEDIUM',
-            'ml_analysis': {'ml_available': True, 'risk_score': 5.5, 'priority': 3}
-        },
-        {
-            'cve_id': 'CVE-2024-0006',
-            'severity': 'MEDIUM',
-            'ml_analysis': {'ml_available': True, 'risk_score': 4.8, 'priority': 3}
-        },
-        {
-            'cve_id': 'CVE-2024-0007',
-            'severity': 'LOW',
-            'ml_analysis': {'ml_available': True, 'risk_score': 3.2, 'priority': 4}
+            'risk_score': 7.8,
+            'priority': 2
         },
     ]
     

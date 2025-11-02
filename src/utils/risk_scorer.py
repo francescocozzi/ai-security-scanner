@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Risk Scoring System
+"""
+
 class RiskScorer:
     '''Calculate advanced risk score'''
     
@@ -42,9 +47,19 @@ class RiskScorer:
         impact_score = self._calculate_impact(vuln_data)
         context_mult = self.context_weights.get(context, 1.0)
         
-        risk = base_score * exploit_score * impact_score * context_mult
+        # 🔧 FIX: Aggiungi bonus exploit
+        exploit_bonus = self._calculate_exploit_bonus(vuln_data)
+        
+        risk = base_score * exploit_score * impact_score * context_mult * exploit_bonus
         
         return max(0.0, min(10.0, risk))
+    
+    def calculate_risk(self, vuln_data):
+        """
+        🆕 NUOVO: Alias per compatibilità con xml_parser
+        Questo viene chiamato da xml_parser.py
+        """
+        return self.calculate_risk_score(vuln_data)
     
     def _calculate_exploitability(self, vuln_data):
         '''Calculate exploitability score'''
@@ -80,16 +95,79 @@ class RiskScorer:
         
         return impact_score
     
-    def get_priority(self, risk_score):
-        '''Get priority 1-4'''
-        if risk_score >= 9.0:
-            return 1
-        elif risk_score >= 7.0:
-            return 2
-        elif risk_score >= 4.0:
-            return 3
+    def _calculate_exploit_bonus(self, vuln_data):
+        """
+        🆕 NUOVO: Calcola bonus se exploit disponibile
+        """
+        exploit_available = vuln_data.get('exploit_available', False)
+        description = str(vuln_data.get('description', '')).upper()
+        
+        # Check for exploit indicators
+        if exploit_available or '*EXPLOIT*' in description:
+            return 1.3  # 30% bonus for available exploits
+        
+        return 1.0
+    
+    def get_priority(self, risk_score, vuln_data=None):
+        '''
+        Get priority 1-4
+        
+        🔧 MIGLIORATO: Considera anche severity ed exploits
+        '''
+        
+        # Se abbiamo i dati della vulnerabilità, usiamoli
+        if vuln_data:
+            severity = vuln_data.get('severity', 'LOW').upper()
+            exploit_available = vuln_data.get('exploit_available', False)
+            description = str(vuln_data.get('description', '')).upper()
+            has_exploit = exploit_available or '*EXPLOIT*' in description
+            
+            # PRIORITY 1 - URGENTE
+            # CRITICAL con exploit pubblico = massima priorità
+            if severity == 'CRITICAL' and has_exploit:
+                return 1
+            
+            # Risk score molto alto
+            if risk_score >= 9.0:
+                return 1
+            
+            # PRIORITY 2 - ALTO
+            # CRITICAL senza exploit
+            if severity == 'CRITICAL':
+                return 2
+            
+            # HIGH con exploit
+            if severity == 'HIGH' and has_exploit:
+                return 2
+            
+            # Risk score alto
+            if risk_score >= 7.0:
+                return 2
+            
+            # PRIORITY 3 - MEDIO
+            # HIGH senza exploit
+            if severity == 'HIGH':
+                return 3
+            
+            # MEDIUM con alto risk score
+            if severity == 'MEDIUM' and risk_score >= 5.0:
+                return 3
+            
+            # Risk score medio
+            if risk_score >= 4.0:
+                return 3
+        
         else:
-            return 4
+            # Fallback: solo basato su risk_score
+            if risk_score >= 9.0:
+                return 1
+            elif risk_score >= 7.0:
+                return 2
+            elif risk_score >= 4.0:
+                return 3
+        
+        # PRIORITY 4 - BASSO
+        return 4
     
     def get_priority_label(self, priority):
         '''Get priority label'''
@@ -108,22 +186,99 @@ class RiskScorer:
 
 
 if __name__ == '__main__':
-    # Test
+    # Test con diversi scenari
     scorer = RiskScorer()
     
-    test = {
-        'cvss_score': 9.8,
-        'attack_vector': 'NETWORK',
-        'attack_complexity': 'LOW',
-        'privileges_required': 'NONE',
-        'user_interaction': 'NONE',
-        'confidentiality_impact': 'HIGH',
-        'integrity_impact': 'HIGH',
-        'availability_impact': 'HIGH'
-    }
+    print("="*70)
+    print("RISK SCORER - TEST SCENARIOS")
+    print("="*70)
     
-    risk = scorer.calculate_risk_score(test)
-    priority = scorer.get_priority(risk)
+    scenarios = [
+        {
+            'name': 'CRITICAL + EXPLOIT + NETWORK',
+            'data': {
+                'cvss_score': 9.8,
+                'severity': 'CRITICAL',
+                'attack_vector': 'NETWORK',
+                'attack_complexity': 'LOW',
+                'privileges_required': 'NONE',
+                'user_interaction': 'NONE',
+                'confidentiality_impact': 'HIGH',
+                'integrity_impact': 'HIGH',
+                'availability_impact': 'HIGH',
+                'exploit_available': True,
+                'description': 'Stack overflow *EXPLOIT*'
+            }
+        },
+        {
+            'name': 'HIGH + NO EXPLOIT + NETWORK',
+            'data': {
+                'cvss_score': 7.5,
+                'severity': 'HIGH',
+                'attack_vector': 'NETWORK',
+                'attack_complexity': 'LOW',
+                'privileges_required': 'NONE',
+                'user_interaction': 'NONE',
+                'confidentiality_impact': 'HIGH',
+                'integrity_impact': 'HIGH',
+                'availability_impact': 'LOW',
+                'exploit_available': False
+            }
+        },
+        {
+            'name': 'MEDIUM + LOCAL',
+            'data': {
+                'cvss_score': 5.0,
+                'severity': 'MEDIUM',
+                'attack_vector': 'LOCAL',
+                'attack_complexity': 'LOW',
+                'privileges_required': 'LOW',
+                'user_interaction': 'NONE',
+                'confidentiality_impact': 'HIGH',
+                'integrity_impact': 'LOW',
+                'availability_impact': 'NONE',
+                'exploit_available': False
+            }
+        },
+        {
+            'name': 'LOW + LOCAL + HIGH COMPLEXITY',
+            'data': {
+                'cvss_score': 2.5,
+                'severity': 'LOW',
+                'attack_vector': 'LOCAL',
+                'attack_complexity': 'HIGH',
+                'privileges_required': 'HIGH',
+                'user_interaction': 'REQUIRED',
+                'confidentiality_impact': 'LOW',
+                'integrity_impact': 'NONE',
+                'availability_impact': 'NONE',
+                'exploit_available': False
+            }
+        }
+    ]
     
-    print(f"Risk Score: {risk:.2f}/10")
-    print(f"Priority: {priority} ({scorer.get_priority_label(priority)})")
+    for scenario in scenarios:
+        print(f"\n{scenario['name']}")
+        print("-" * 70)
+        
+        data = scenario['data']
+        
+        # Calculate risk
+        risk = scorer.calculate_risk_score(data)
+        
+        # Get priority (con dati vulnerabilità)
+        priority = scorer.get_priority(risk, data)
+        priority_label = scorer.get_priority_label(priority)
+        timeframe = scorer.get_timeframe(priority)
+        
+        # Display results
+        print(f"  Severity: {data['severity']:8s} | CVSS: {data['cvss_score']:.1f}")
+        print(f"  Attack Vector: {data['attack_vector']:8s} | Complexity: {data['attack_complexity']}")
+        print(f"  Exploit Available: {data['exploit_available']}")
+        print(f"  → Risk Score: {risk:.2f}/10.0")
+        print(f"  → Priority: {priority} ({priority_label})")
+        print(f"  → Timeframe: {timeframe}")
+    
+    print("\n" + "="*70)
+    print("✅ Test completato!")
+    print("\nVerifica che le priorità siano variate (1, 2, 3, 4)")
