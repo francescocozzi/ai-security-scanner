@@ -1,209 +1,271 @@
-# AI Security Scanner
+# 🛡️ AI Security Scanner
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
-![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![CI](https://github.com/francescocozzi/ai-security-scanner/actions/workflows/ci.yml/badge.svg)
 
-## 🔐 Overview
+**AI Security Scanner** è uno strumento open-source per l’analisi automatizzata delle vulnerabilità in ambienti DevSecOps, pipeline CI/CD e infrastrutture applicative.  
+Integra analisi ML, punteggi di rischio normalizzati, correlazione con dati NVD e generazione di report interattivi.
 
-**AI Security Scanner** is an open-source tool designed to automatically analyze AI/ML projects for potential security risks, dependency vulnerabilities, data leakage concerns, and bad practices.  
-It is useful for DevOps, ML Engineers, security teams, and auditors who want to **detect risks early** in the machine learning pipeline—before deployment.
+✅ Ideale per penetration tester, SOC, DevOps, analisti sicurezza  
+✅ Esegue ingest di scansioni Nmap XML  
+✅ Assegna risk score ML-driven  
+✅ Produce report HTML interattivi + grafici
 
-The tool scans the project structure, dependencies, datasets, and configuration artifacts, and then generates an HTML dashboard with actionable insights.
+---
 
-## 🧠 What It Can Detect
+## 🔍 Funzionalità principali
 
-- Security-related patterns and anti-patterns in Python code
-- Vulnerable Python library versions (CVE-based)
-- Dangerous configuration files
-- Indicators of data exposure or leakage
-- ML pipeline hygiene issues (bias, imbalance, drift metadata)
-- Unsafe handling of secrets, tokens, credentials
-- Deprecated cryptographic libraries
+- Parsing avanzato di vulnerabilità (Nmap XML)
+- Integrazione facoltativa con NVD API (CVSS v3/v3.1)
+- Normalizzazione del **risk_score**
+- Calcolo della **priority** per triage operativo
+- Rappresentazione grafica:
+  - Severity distribution
+  - Priority distribution
+  - Risk score distribution
+  - Top vulnerabilities (deduplicate by CVE)
+- Dashboard HTML responsive e stampabile
+- JSON completo per integrazioni esterne
 
-## 🖥️ HTML Dashboard Generator
+---
 
-The repository includes a dashboard generator capable of producing:
+## 🧠 Come funziona
 
-- Vulnerability summaries
-- Visual charts
-- Severity scores
-- Fix recommendations
+Durante l’elaborazione:
 
-Ideal for:
+1. Le vulnerabilità vengono estratte dal report
+2. Se richiesto, vengono arricchite con dati **NVD** (CVSS)
+3. Si applica un modello ML (lightweight) per scoring
+4. Si normalizza il punteggio combinando:
+   - ML risk score  
+   - CVSS  
+   - Severity fallback  
+   - Priority map
+5. Viene generato un **dashboard HTML interattivo**
+6. Si salvano grafici PNG e report JSON completi
 
-- Security reviews
-- CI/CD pipelines
-- Compliance reports
+---
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Python **3.8+**
-- `pip` package manager
-- Basic knowledge of CLI usage
-
-### Installation
-
-Clone the repository:
+## 📦 Installazione
 
 ```bash
 git clone https://github.com/francescocozzi/ai-security-scanner.git
 cd ai-security-scanner
 pip install -r requirements.txt
-````
-
-### Usage Example
-
-```bash
-python scanner.py \
-    --target ./project_to_analyze \
-    --output ./reports/security_report.html \
-    --config ./config/scanner_config.yaml
 ```
 
-Get full CLI help:
+Richiede Python ≥ 3.10.
+
+---
+
+## 🚀 Utilizzo rapido
+
+Generazione report completo da scan Nmap XML:
 
 ```bash
-python scanner.py --help
+python examples/generate_report.py scan_full.xml --nvd
 ```
 
-## ⚙️ Configuration
+Apri subito il dashboard:
 
-You can customize behavior through a YAML configuration file:
+```bash
+xdg-open reports/dashboard_*.html
+```
+
+---
+
+## 📤 Esempio output (CLI)
+
+```
+[STEP 1/5] Parsing and ML Analysis...
+✓ 51 vulnerabilities found
+✓ CVSS enriched (NVD)
+
+[STEP 2/5] Security Analysis...
+- Attack Surface Score: 293 (CRITICAL)
+- Entry Points: 4
+
+[STEP 3/5] Visualizations...
+✓ severity_dist.png
+✓ priority_dist.png
+✓ risk_dist.png
+✓ top_vulns.png
+
+[STEP 4/5] Dashboard generated
+
+[STEP 5/5] Saved JSON Report: scan_full_complete_report.json
+```
+
+---
+
+## ⚙️ Configurazione
+
+Puoi abilitare/disabilitare controlli:
 
 ```yaml
-checks:
-  code_analysis: true
-  dependency_vulnerabilities: true
-  data_exposure: true
+nvd:
+  enable: true
 
-thresholds:
-  max_high_issues: 10
-
-report:
-  format: html
-  save_path: ./reports
+analysis:
+  ml: true
+  risk_normalization: true
 ```
 
-## 📂 Project Structure
+---
+
+## 📁 Struttura del progetto
 
 ```
 ai-security-scanner/
-├── __pycache__/                 # Python bytecode cache (auto-generated)
-├── data/
-│   └── example_scan.json        # Example vulnerability scan results
-├── reports/
-│   ├── dashboard_example.html   # Example generated HTML report
-│   └── plots/                   # Matplotlib charts used in dashboards
-├── utils/
-│   ├── parser.py                # Scan results parser with ML-driven scoring
-│   └── security_scores.py       # Logic for severity classification
-├── dashboard_generator.py       # HTML dashboard builder
-├── scanner.py                   # Entry point for the security scan
-├── requirements.txt             # Python dependencies
-├── README.md                    # Project documentation
-└── LICENSE                      # Project license
+├── examples/
+│   └── generate_report.py        # Entry per report pipeline
+├── reports/                      # Output generati
+├── src/
+│   ├── parser/
+│   │   └── xml_parser.py         # Ingest Nmap XML
+│   ├── security/
+│   │   ├── attack_surface.py
+│   │   ├── threat_model.py
+│   │   └── recommendations.py
+│   └── visualization/
+│       ├── plotter.py            # Grafici (matplotlib)
+│       └── dashboard.py          # Dashboard HTML
+├── requirements.txt
+├── README.md
+├── LICENSE
+└── ...
 ```
 
-## ✅ Features
+---
 
-* Static code analysis (Python)
-* Dependency vulnerability auditing
-* HTML dashboard reporting
-* Severity scoring
-* Easy CI/CD integration
-* Modular architecture (plug-in friendly)
+## 🧮 Risk Score Normalization
 
-## 🧪 Tests
+La pipeline massimizza il punteggio fra:
 
-Run unit tests:
+- ML risk
+- CVSS baseScore
+- Severity mapping
+- Priority mapping
+
+Formula (semplificata):
+
+```
+risk_normalized = max(
+    ml_risk_score,
+    cvss_score,
+    severity_mapping,
+    priority_mapping
+)
+```
+
+Priorità assegnata automaticamente:
+
+| Risk score | Priority | Azione |
+|------------|----------|--------|
+| ≥ 9.0      | P1       | Immediata |
+| ≥ 7.0      | P2       | Rapida |
+| ≥ 4.0      | P3       | Pianificata |
+| < 4.0      | P4       | Monitoraggio |
+
+---
+
+## 📊 Grafici generati
+
+- **Severity Distribution**
+- **Priority Distribution**
+- **Risk Score Histogram**
+- **Top Vulnerabilities** *(deduplicate by CVE)*
+
+---
+
+## 🖥️ Dashboard
+
+Interattivo, exportabile come PDF, sezioni:
+
+- KPI
+- Charts
+- Riepilogo Priority/Severity
+- Top 10 Highest-Risk (dedup)
+- Raccomandazioni
+
+---
+
+## 🔌 Integrazione CI/CD
+
+Esempio di fail della pipeline se presenti P1:
+
+```bash
+grep '"priority": 1' scan_full_complete_report.json \
+  | wc -l | awk '$1 > 0 { exit 1 }'
+```
+
+---
+
+## 🧪 Test
 
 ```bash
 pytest
 ```
 
-## 📸 Dashboard Preview
+---
 
-![Dashboard Example](./docs/dashboard_preview.png)
+## 🔐 Security Notes
 
+Se trovi una vulnerabilità nella repo:
 
-## 📝 Sample Report Snippet
+- **Non** aprire un issue pubblico
+- Contatta privatamente il maintainer
 
-```json
-{
-  "vulnerabilities": [
-    {"name": "insecure_dependency", "severity": "high"},
-    {"name": "weak_credentials", "severity": "medium"}
-  ],
-  "summary": {
-    "high": 3,
-    "medium": 5,
-    "low": 2
-  }
-}
-```
+Responsible disclosure welcome.
 
-## 🔍 Current Checks
+---
 
-- Deprecated / risky Python functions
-- Weak cryptographic algorithms
-- Hard-coded credentials
-- Vulnerable dependencies (CVE-based)
-- Suspicious network-related constants
+## ⚠️ Disclaimer
 
+Questo tool **non sostituisce**
+un’analisi di sicurezza umana.  
+È un acceleratore di triage e prioritizzazione.
 
-## 💡 Roadmap
+---
 
-Planned improvements include:
+## 📍 Roadmap
 
-* AI-assisted code suggestion engine
-* Container image scanning
-* Secret-leak pattern classification
-* CLI interactive mode
-* Export to PDF
+- Export PDF nativo
+- Plugin architecture (OWASP checks)
+- Container image scanning
+- SBOM ingestion
+- Secret-detection ML
+- Delta scan (trend history)
+
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome!
+1. Fork
+2. `git checkout -b feature/...`
+3. Commit
+4. Push
+5. PR
 
-1. Fork the repository
-2. Create a feature branch:
-   `git checkout -b feature/my-check`
-3. Commit your changes
-   `git commit -m "Add new scanning plugin"`
-4. Push the branch
-   `git push origin feature/my-check`
-5. Open a Pull Request
+Con test verdi 😉
 
-Please ensure that all tests pass before submitting.
+---
 
-## 🔒 Security Notice
+## 📜 License
 
-If you discover a security vulnerability:
+MIT — libero utilizzo anche commerciale.
 
-* **Do not** open a public issue
-* Please contact the maintainer privately
-
-Responsible disclosure is appreciated.
-
-## 📄 License
-
-Distributed under the **MIT** License.
-See the `LICENSE` file for more information.
+---
 
 ## 👤 Maintainer
 
-**Francesco Cozzi**
-GitHub: [https://github.com/francescocozzi](https://github.com/francescocozzi)
+**Francesco Cozzi**  
+GitHub: https://github.com/francescocozzi
 
-For inquiries, open an Issue or Discussion.
-
-⚠️ This tool does *not* replace manual security review.
-It is meant to support—not replace—expert analysis.
+---
 
 ## 🔖 Tags
 
-security, cybersecurity, machine-learning, auditing, scanning, CVE, MLOps, DevSecOps
+security, cybersecurity, devsecops, ml-security, cve, scanner, dashboard, nmap, vulnerability-management, pentesting, CI/CD, risk-scoring, CVSS
