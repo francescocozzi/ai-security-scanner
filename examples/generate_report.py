@@ -18,6 +18,7 @@ from src.security.attack_surface import AttackSurfaceAnalyzer
 from src.security.threat_model import ThreatModeler
 from src.security.recommendations import SecurityRecommendations
 
+
 def generate_complete_report(xml_file, use_nvd=False):
     '''Generate complete security report'''
     
@@ -40,11 +41,140 @@ def generate_complete_report(xml_file, use_nvd=False):
         return None
     
     print(f"✓ Found {len(vulnerabilities)} vulnerabilities")
-    
+
+    # === NORMALIZATION (prefer MAX among candidates) ===========================
+    import re
+
+    SEV_TO_SCORE = {"CRITICAL": 9.5, "HIGH": 8.0, "MEDIUM": 5.5, "LOW": 3.0, "INFO": 1.0, "UNKNOWN": 0.0}
+    PRI_TO_SCORE = {1: 9.5, 2: 8.0, 3: 5.5, 4: 3.0}
+
+    def _first_float(x):
+        try:
+            return float(x)
+        except Exception:
+            return None
+
+    def _priority_from_risk(r):
+        if r >= 9.0:  return 1
+        if r >= 7.0:  return 2
+        if r >= 4.0:  return 3
+        return 4
+
+    cvss_key_re = re.compile(r'(base\s*_?score|cvss.*score|^score$)', re.IGNORECASE)
+    sev_key_re  = re.compile(r'(severity|base\s*severity|severity[_\- ]?label|severityText|sev)$', re.IGNORECASE)
+
+    def _walk(obj, want="cvss"):
+        stack = [obj]
+        while stack:
+            cur = stack.pop()
+            if isinstance(cur, dict):
+                if want == "cvss":
+                    # NVD 2.0: cvssMetricV31[].cvssData.baseScore, varianti ecc.
+                    for k in ("baseScore","base_score","score","cvss3_score","cvss_v31","cvss_v30","cvss_v3","cvss_v2","cvss"):
+                        if k in cur:
+                            v = cur[k]
+                            if isinstance(v, dict):
+                                for kk in ("baseScore","base_score","score"):
+                                    if kk in v:
+                                        f = _first_float(v[kk])
+                                        if f is not None and 0 <= f <= 10:
+                                            return f
+                            else:
+                                f = _first_float(v)
+                                if f is not None and 0 <= f <= 10:
+                                    return f
+                    for k, v in cur.items():
+                        if cvss_key_re.search(str(k)):
+                            f = _first_float(v if not isinstance(v, dict) else v.get("baseScore") or v.get("score"))
+                            if f is not None and 0 <= f <= 10:
+                                return f
+                else:
+                    # severity label
+                    for k in ("severity","baseSeverity","severity_label","severityText","sev"):
+                        if k in cur and isinstance(cur[k], str):
+                            s = cur[k].strip().upper()
+                            if s in SEV_TO_SCORE:
+                                return s
+                    for k, v in cur.items():
+                        if sev_key_re.search(str(k)) and isinstance(v, str):
+                            s = v.strip().upper()
+                            if s in SEV_TO_SCORE:
+                                return s
+                stack.extend(cur.values())
+            elif isinstance(cur, (list, tuple)):
+                stack.extend(cur)
+        return None
+
+    normalized = []
+    for v in vulnerabilities:
+        v = dict(v)
+        ml = dict(v.get("ml") or v.get("ml_analysis") or {})
+
+        # candidati rischio
+        candidates = []
+
+        # 1) esistenti
+        for val in (v.get("risk_score"), ml.get("risk_score")):
+            f = _first_float(val)
+            if f is not None and 0 <= f <= 10:
+                candidates.append(f)
+
+        # 2) NVD / strutture annidate
+        cvss = _walk(v, "cvss") or _walk(v.get("nvd") or v.get("nvd_data") or {}, "cvss")
+        if cvss is not None:
+            candidates.append(float(cvss))
+
+        # 3) severity ovunque
+        sev = v.get("severity")
+        if not isinstance(sev, str):
+            sev = _walk(v, "sev") or _walk(v.get("nvd") or v.get("nvd_data") or {}, "sev")
+        if isinstance(sev, str):
+            sev_score = SEV_TO_SCORE.get(sev.upper(), 0.0)
+            candidates.append(sev_score)
+
+        # 4) priority
+        p = v.get("priority")
+        if p is None and isinstance(v.get("ml") or v.get("ml_analysis"), dict):
+            p = (v.get("ml") or v.get("ml_analysis")).get("priority")
+        try:
+            p = int(p) if p is not None else None
+        except Exception:
+            p = None
+        if p in PRI_TO_SCORE:
+            candidates.append(PRI_TO_SCORE[p])
+
+        # risk finale = max(candidati) (se nessuno, 0)
+        risk = max(candidates) if candidates else 0.0
+
+        # priority finale coerente al rischio
+        final_p = _priority_from_risk(risk)
+
+        v["risk_score"] = float(risk)
+        v["priority"] = final_p
+        ml["risk_score"] = float(risk)
+        ml["priority"] = final_p
+        v["ml"] = ml
+        normalized.append(v)
+
+    vulnerabilities = normalized
+    results["vulnerabilities"] = vulnerabilities
+
+    # summary.by_priority / average_risk coerenti
+    by_priority = {}
+    for v in vulnerabilities:
+        by_priority[int(v.get("priority", 4))] = by_priority.get(int(v.get("priority", 4)), 0) + 1
+
+    results.setdefault("summary", {})
+    results["summary"]["by_priority"] = by_priority
+    try:
+        results["summary"]["average_risk"] = sum(v.get("risk_score", 0) or 0 for v in vulnerabilities) / max(1, len(vulnerabilities))
+    except Exception:
+        results["summary"]["average_risk"] = None
+    # ===========================================================================
+
     # Step 2: Security Analysis
     print("\n[STEP 2/5] Security Analysis...")
     
-    # Initialize results for security analysis
     surface = None
     threat_report = None
     recommendations = None
@@ -55,7 +185,6 @@ def generate_complete_report(xml_file, use_nvd=False):
         surface_analyzer = AttackSurfaceAnalyzer()
         surface = surface_analyzer.analyze_surface(vulnerabilities)
         
-        # Safe access with .get()
         print(f"    - Attack Surface Score: {surface.get('total_score', 0)}")
         print(f"    - Risk Level: {surface.get('risk_level', 'UNKNOWN')}")
         print(f"    - Entry Points: {len(surface.get('entry_points', []))}")
